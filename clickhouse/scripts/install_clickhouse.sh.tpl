@@ -66,8 +66,8 @@ setup_clickhouse_server() {
     chown -R clickhouse:clickhouse /var/lib/clickhouse
     
     # Copy configurations
-    aws s3 cp "s3://${clickhouse_config_bucket}/clickhouse_${server_id}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
-    aws s3 cp "s3://${clickhouse_config_bucket}/clickhouse_${server_id}/config.d/" "$${CLICKHOUSE_CONFIG_DIR}" --recursive
+    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
+    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/config.d/" "$${CLICKHOUSE_CONFIG_DIR}" --recursive
     
     # Start service
     service clickhouse-server start
@@ -89,8 +89,8 @@ setup_clickhouse_keeper() {
     chown clickhouse:clickhouse /var/lib/clickhouse-keeper
     
     # Copy configurations
-    aws s3 cp "s3://${clickhouse_config_bucket}/keeper_${server_id}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
-    aws s3 cp "s3://${clickhouse_config_bucket}/keeper_${server_id}/keeper_config.xml" "$${KEEPER_CONFIG_PATH}"
+    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
+    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/keeper_config.xml" "$${KEEPER_CONFIG_PATH}"
     
     # Start service
     systemctl enable clickhouse-keeper

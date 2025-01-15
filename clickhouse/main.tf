@@ -34,19 +34,19 @@ module "bastion" {
 }
 
 module "clickhouse_cluster" {
-  count   = length(local.azs)
-  source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "5.7.1"
+  for_each = local.cluster_nodes
+  source   = "terraform-aws-modules/ec2-instance/aws"
+  version  = "5.7.1"
 
-  name                 = "clickhouse_cluster_${count.index + 1}"
+  name                 = each.key
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
   ami                  = data.aws_ami.ubuntu.id
 
   instance_type          = var.clickhouse_instance_type
   vpc_security_group_ids = [aws_security_group.clickhouse_cluster.id]
-  subnet_id              = module.vpc.private_subnets[count.index]
+  subnet_id              = module.vpc.private_subnets[each.value.subnet_index]
   user_data = templatefile("${path.module}/scripts/install_clickhouse.sh.tpl", {
-    server_id                = count.index + 1,
+    node_name                = each.value.name,
     clickhouse_server        = true,
     clickhouse_config_bucket = aws_s3_bucket.configuration.bucket
   })
@@ -67,19 +67,19 @@ module "clickhouse_cluster" {
 }
 
 module "clickhouse_keeper" {
-  count   = length(local.azs)
-  source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "5.7.1"
+  for_each = local.keeper_nodes
+  source   = "terraform-aws-modules/ec2-instance/aws"
+  version  = "5.7.1"
 
-  name                 = "clickhouse_keeper_${count.index + 1}"
+  name                 = each.key
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
   ami                  = data.aws_ami.ubuntu.id
 
   instance_type          = var.keeper_instance_type
   vpc_security_group_ids = [aws_security_group.clickhouse_keeper.id]
-  subnet_id              = module.vpc.private_subnets[count.index]
+  subnet_id              = module.vpc.private_subnets[each.value.subnet_index]
   user_data = templatefile("${path.module}/scripts/install_clickhouse.sh.tpl", {
-    server_id                = count.index + 1,
+    node_name                = each.value.name,
     clickhouse_server        = false,
     clickhouse_config_bucket = aws_s3_bucket.configuration.bucket
   })

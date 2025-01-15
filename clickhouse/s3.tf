@@ -4,13 +4,13 @@ resource "aws_s3_bucket" "configuration" {
 }
 
 resource "aws_s3_object" "cluster_network_configuration" {
-  count  = length(local.azs)
-  bucket = aws_s3_bucket.configuration.bucket
-  key    = "clickhouse_${count.index + 1}/config.d/network-and-logging.xml"
+  for_each = local.cluster_nodes
+  bucket   = aws_s3_bucket.configuration.bucket
+  key      = "${each.value.name}/config.d/network-and-logging.xml"
   content = templatefile("${path.module}/config/server/network-and-logging.xml.tpl", {
-    server_id    = count.index + 1
+    server_id    = each.value.id,
     cluster_name = var.cluster_name
-    node_name    = "clickhouse_cluster_${count.index + 1}"
+    node_name    = each.value.name
   })
 }
 
@@ -20,41 +20,41 @@ resource "random_password" "cluster_secret" {
 }
 
 resource "aws_s3_object" "cluster_remote_server_configuration" {
-  count  = length(local.azs)
-  bucket = aws_s3_bucket.configuration.bucket
-  key    = "clickhouse_${count.index + 1}/config.d/remote-servers.xml"
+  for_each = local.cluster_nodes
+  bucket   = aws_s3_bucket.configuration.bucket
+  key      = "${each.value.name}/config.d/remote-servers.xml"
   content = templatefile("${path.module}/config/server/remote-servers.xml.tpl", {
-    server_id      = count.index + 1
+    server_id      = each.value.id,
     cluster_name   = var.cluster_name
     cluster_secret = random_password.cluster_secret.result
-    replica_hosts  = aws_route53_record.clickhouse_cluster[*].fqdn
+    replica_hosts  = [for _, record in aws_route53_record.clickhouse_cluster : record.fqdn]
   })
 }
 
 resource "aws_s3_object" "cluster_use_keeper_configuration" {
-  count  = length(local.azs)
-  bucket = aws_s3_bucket.configuration.bucket
-  key    = "clickhouse_${count.index + 1}/config.d/use-keeper.xml"
+  for_each = local.cluster_nodes
+  bucket   = aws_s3_bucket.configuration.bucket
+  key      = "${each.value.name}/config.d/use-keeper.xml"
   content = templatefile("${path.module}/config/server/use-keeper.xml.tpl", {
-    keeper_nodes = aws_route53_record.clickhouse_keeper[*].fqdn
+    keeper_nodes = [for _, record in aws_route53_record.clickhouse_keeper : record.fqdn]
   })
 }
 
 resource "aws_s3_object" "cluster_macros" {
-  count  = length(local.azs)
-  bucket = aws_s3_bucket.configuration.bucket
-  key    = "clickhouse_${count.index + 1}/config.d/macros.xml"
+  for_each = local.cluster_nodes
+  bucket   = aws_s3_bucket.configuration.bucket
+  key      = "${each.value.name}/config.d/macros.xml"
   content = templatefile("${path.module}/config/server/macros.xml.tpl", {
     cluster_name = var.cluster_name
     shard_id     = 1
-    replica_id   = count.index + 1
+    replica_id   = each.value.id
   })
 }
 
 resource "aws_s3_object" "cluster_cloudwatch_configuration" {
-  count  = length(local.azs)
-  bucket = aws_s3_bucket.configuration.bucket
-  key    = "clickhouse_${count.index + 1}/cloudwatch.json"
+  for_each = local.cluster_nodes
+  bucket   = aws_s3_bucket.configuration.bucket
+  key      = "${each.value.name}/cloudwatch.json"
   content = templatefile("${path.module}/config/cloudwatch.json.tpl", {
     log_group  = aws_cloudwatch_log_group.clickhouse.name
     log_name   = "ClickHouseServer"
@@ -64,18 +64,19 @@ resource "aws_s3_object" "cluster_cloudwatch_configuration" {
 }
 
 resource "aws_s3_object" "keeper_configuration" {
-  count  = length(local.azs)
-  bucket = aws_s3_bucket.configuration.bucket
-  key    = "keeper_${count.index + 1}/keeper_config.xml"
+  for_each = local.keeper_nodes
+  bucket   = aws_s3_bucket.configuration.bucket
+  key      = "${each.value.name}/keeper_config.xml"
   content = templatefile("${path.module}/config/keeper/keeper_config.xml.tpl", {
-    server_id = count.index + 1
+    server_id    = each.value.id
+    keeper_nodes = local.keeper_nodes
   })
 }
 
 resource "aws_s3_object" "keeper_cloudwatch_configuration" {
-  count  = length(local.azs)
-  bucket = aws_s3_bucket.configuration.bucket
-  key    = "keeper_${count.index + 1}/cloudwatch.json"
+  for_each = local.keeper_nodes
+  bucket   = aws_s3_bucket.configuration.bucket
+  key      = "${each.value.name}/cloudwatch.json"
   content = templatefile("${path.module}/config/cloudwatch.json.tpl", {
     log_group  = aws_cloudwatch_log_group.keeper.name
     log_name   = "ClickHouseKeeper"

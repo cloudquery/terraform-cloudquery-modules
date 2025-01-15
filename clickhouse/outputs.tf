@@ -1,12 +1,19 @@
-// Availability Zones - used for debugging
-output "availability_zones" {
-  value = data.aws_availability_zones.available.names
+// Output the public and private IP addresses of the ClickHouse cluster
+output "clickhouse_cluster_ips" {
+  value = { for k, v in local.cluster_nodes : k => {
+    id : module.clickhouse_cluster[k].id
+    public : module.clickhouse_cluster[k].public_ip
+    private : module.clickhouse_cluster[k].private_ip
+    }
+  }
 }
 
-// EC2 instances IP addresses
-output "clickhouse_cluster_ips" {
-  value = {
-    public : module.clickhouse_cluster[*].public_ip
-    private : module.clickhouse_cluster[*].private_ip
+// Output the public and private IP addresses of the ClickHouse keepers
+output "clickhouse_keeper_ips" {
+  value = { for k, v in local.keeper_nodes : k => {
+    id : module.clickhouse_keeper[k].id
+    public : module.clickhouse_keeper[k].public_ip
+    private : module.clickhouse_keeper[k].private_ip
+    }
   }
 }
