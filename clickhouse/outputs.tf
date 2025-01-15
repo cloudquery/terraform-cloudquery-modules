@@ -17,3 +17,9 @@ output "clickhouse_keeper_ips" {
     }
   }
 }
+
+
+// Output the DNS name of the NLB
+output "clickhouse_nlb_dns" {
+  value = var.enable_nlb ? aws_lb.nlb[0].dns_name : ""
+}

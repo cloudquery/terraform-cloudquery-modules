@@ -67,3 +67,9 @@ variable "keeper_volume_type" {
   description = "The type of EBS volume for the ClickHouse keepers"
   default     = "gp2"
 }
+
+variable "enable_nlb" {
+  type        = bool
+  description = "Enable the Network Load Balancer for the ClickHouse cluster"
+  default     = true
+}

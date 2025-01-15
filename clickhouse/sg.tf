@@ -1,3 +1,32 @@
+resource "aws_security_group" "nlb" {
+  count       = var.enable_nlb ? 1 : 0
+  name        = "clickhouse-nlb-sg"
+  description = "Security group for the ClickHouse NLB"
+  vpc_id      = module.vpc.vpc_id
+}
+
+resource "aws_security_group_rule" "nlb_ingress" {
+  count             = var.enable_nlb ? 1 : 0
+  description       = "Allow external traffic to the ClickHouse cluster"
+  type              = "ingress"
+  from_port         = 9000
+  to_port           = 9000
+  protocol          = "tcp"
+  security_group_id = aws_security_group.nlb[0].id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "nlb_clickhouse_egress" {
+  count                    = var.enable_nlb ? 1 : 0
+  description              = "Allow NLB to talk to the ClickHouse cluster"
+  type                     = "egress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  security_group_id        = aws_security_group.nlb[0].id
+  source_security_group_id = aws_security_group.clickhouse_cluster.id
+}
+
 resource "aws_security_group" "clickhouse_cluster" {
   name        = "clickhouse_cluster-sg"
   description = "Security group for the ClickHouse cluster"
@@ -14,14 +43,36 @@ resource "aws_security_group_rule" "cluster_allow_all_outbound" {
   security_group_id = aws_security_group.clickhouse_cluster.id
 }
 
+resource "aws_security_group_rule" "clickhouse_healthcheck" {
+  count                    = var.enable_nlb ? 1 : 0
+  description              = "Allow healthcheck from the NLB"
+  type                     = "ingress"
+  from_port                = 8123
+  to_port                  = 8123
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.clickhouse_cluster.id
+  source_security_group_id = aws_security_group.nlb[0].id
+}
+
+resource "aws_security_group_rule" "clickhouse_nlb_ingress" {
+  count                    = var.enable_nlb ? 1 : 0
+  description              = "Allow NLB to communicate with the ClickHouse cluster"
+  type                     = "ingress"
+  from_port                = 9000
+  to_port                  = 9000
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.clickhouse_cluster.id
+  source_security_group_id = aws_security_group.nlb[0].id
+}
+
 resource "aws_security_group_rule" "clickhouse_ingress" {
-  description       = "Allow ClickHouse cluster to communicate with the other clikchouse nodes"
+  description       = "Allow ClickHouse cluster to communicate with the other clickhouse nodes"
   type              = "ingress"
   from_port         = 9000
   to_port           = 9000
   protocol          = "-1"
-  cidr_blocks       = ["10.0.0.0/16"]
   security_group_id = aws_security_group.clickhouse_cluster.id
+  self              = true
 }
 
 resource "aws_security_group_rule" "clickhouse_egress" {
@@ -30,8 +81,8 @@ resource "aws_security_group_rule" "clickhouse_egress" {
   from_port         = 9000
   to_port           = 9000
   protocol          = "-1"
-  cidr_blocks       = ["10.0.0.0/16"]
   security_group_id = aws_security_group.clickhouse_cluster.id
+  self              = true
 }
 
 resource "aws_security_group" "clickhouse_keeper" {
