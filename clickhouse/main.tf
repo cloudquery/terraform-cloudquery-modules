@@ -19,20 +19,6 @@ module "vpc" {
   enable_dns_support   = true
 }
 
-module "bastion" {
-  count   = var.enable_bastion ? 1 : 0
-  source  = "terraform-aws-modules/ec2-instance/aws"
-  version = "5.7.1"
-
-  name = "bastion"
-  ami  = data.aws_ami.ubuntu.id
-
-  instance_type               = "t2.micro"
-  associate_public_ip_address = true
-  vpc_security_group_ids      = [aws_security_group.bastion.id]
-  subnet_id                   = module.vpc.public_subnets[0]
-}
-
 module "clickhouse_cluster" {
   for_each = local.cluster_nodes
   source   = "terraform-aws-modules/ec2-instance/aws"

@@ -67,12 +67,3 @@ variable "keeper_volume_type" {
   description = "The type of EBS volume for the ClickHouse keepers"
   default     = "gp2"
 }
-
-############
-# Bastion  #
-############
-variable "enable_bastion" {
-  type        = bool
-  description = "Whether to deploy a bastion host"
-  default     = false
-}
