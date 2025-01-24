@@ -16,6 +16,22 @@ variable "cluster_name" {
   default     = "clickhouse_cluster"
 }
 
+variable "cluster_node_count" {
+  type        = number
+  description = "The number of ClickHouse servers to deploy"
+  default     = 3
+}
+
+variable "keeper_node_count" {
+  type        = number
+  description = "The number of ClickHouse keepers to deploy"
+  default     = 3
+  validation {
+    condition     = var.keeper_node_count % 2 == 1
+    error_message = "keeper_node_count must be an odd number"
+  }
+}
+
 variable "clickhouse_instance_type" {
   type        = string
   description = "The instance type for the ClickHouse servers"
@@ -52,11 +68,8 @@ variable "keeper_volume_type" {
   default     = "gp2"
 }
 
-############
-# Bastion  #
-############
-variable "enable_bastion" {
+variable "enable_nlb" {
   type        = bool
-  description = "Whether to deploy a bastion host"
-  default     = false
+  description = "Enable the Network Load Balancer for the ClickHouse cluster"
+  default     = true
 }

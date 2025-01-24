@@ -1,27 +1,27 @@
 resource "aws_ebs_volume" "clickhouse" {
-  count             = length(local.azs)
-  availability_zone = local.azs[count.index]
+  for_each          = local.cluster_nodes
+  availability_zone = module.vpc.private_subnet_objects[each.value.subnet_index].availability_zone
   size              = var.clickhouse_volume_size
   type              = var.clickhouse_volume_type
 }
 
 resource "aws_volume_attachment" "clickhouse" {
-  count       = length(local.azs)
+  for_each    = local.cluster_nodes
   device_name = "/dev/sdh"
-  volume_id   = aws_ebs_volume.clickhouse[count.index].id
-  instance_id = module.clickhouse_cluster[count.index].id
+  volume_id   = aws_ebs_volume.clickhouse[each.key].id
+  instance_id = module.clickhouse_cluster[each.key].id
 }
 
 resource "aws_ebs_volume" "keeper" {
-  count             = length(local.azs)
-  availability_zone = local.azs[count.index]
+  for_each          = local.keeper_nodes
+  availability_zone = module.vpc.private_subnet_objects[each.value.subnet_index].availability_zone
   size              = var.keeper_volume_size
   type              = var.keeper_volume_type
 }
 
 resource "aws_volume_attachment" "keeper" {
-  count       = length(local.azs)
+  for_each    = local.keeper_nodes
   device_name = "/dev/sdh"
-  volume_id   = aws_ebs_volume.keeper[count.index].id
-  instance_id = module.clickhouse_keeper[count.index].id
+  volume_id   = aws_ebs_volume.keeper[each.key].id
+  instance_id = module.clickhouse_keeper[each.key].id
 }

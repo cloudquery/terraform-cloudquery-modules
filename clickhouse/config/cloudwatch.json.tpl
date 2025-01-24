@@ -9,7 +9,7 @@
         "InstanceId": "$${aws:InstanceId}",
         "InstanceType": "$${aws:InstanceType}"
     },
-    "namespace": "ClickHouseNamespace",
+    "namespace": "CWAgent",
     "metrics_collected": {
       "mem": {
         "measurement": [

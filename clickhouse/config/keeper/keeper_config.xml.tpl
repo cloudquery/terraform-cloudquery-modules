@@ -49,27 +49,13 @@
         <!-- enable sanity hostname checks for cluster configuration (e.g. if localhost is used with remote endpoints) -->
         <hostname_checks_enabled>true</hostname_checks_enabled>
         <raft_configuration>
+            %{~ for keeper in keeper_nodes ~}
             <server>
-                <id>1</id>
-
-                <!-- Internal port and hostname -->
-                <hostname>clickhouse_keeper_1.clickhouse.internal</hostname>
+                <id>${keeper.id}</id>
+                <hostname>${keeper.host}</hostname>
                 <port>9234</port>
             </server>
-            <server>
-                <id>2</id>
-
-                <!-- Internal port and hostname -->
-                <hostname>clickhouse_keeper_2.clickhouse.internal</hostname>
-                <port>9234</port>
-            </server>
-            <server>
-                <id>3</id>
-
-                <!-- Internal port and hostname -->
-                <hostname>clickhouse_keeper_3.clickhouse.internal</hostname>
-                <port>9234</port>
-            </server>
+            %{~ endfor ~}
         </raft_configuration>
     </keeper_server>
 
