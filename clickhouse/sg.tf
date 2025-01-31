@@ -14,7 +14,7 @@ resource "aws_security_group_rule" "nlb_ingress" {
   protocol          = "tcp"
   security_group_id = aws_security_group.nlb[0].id
   # Optional: Replace with specific CIDR blocks if possible
-  cidr_blocks       = var.allowed_cidr_blocks
+  cidr_blocks = var.allowed_cidr_blocks
 }
 
 resource "aws_security_group_rule" "nlb_clickhouse_egress" {

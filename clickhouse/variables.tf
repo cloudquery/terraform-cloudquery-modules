@@ -77,7 +77,7 @@ variable "enable_nlb" {
 variable "allowed_cidr_blocks" {
   type        = list(string)
   description = "List of CIDR blocks allowed to access the ClickHouse cluster"
-  default     = ["0.0.0.0/0"]  # Default to allow all, but users should override this
+  default     = ["0.0.0.0/0"] # Default to allow all, but users should override this
   validation {
     condition     = length(var.allowed_cidr_blocks) > 0
     error_message = "At least one CIDR block must be specified"
