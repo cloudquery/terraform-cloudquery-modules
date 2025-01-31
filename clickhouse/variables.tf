@@ -83,3 +83,15 @@ variable "allowed_cidr_blocks" {
     error_message = "At least one CIDR block must be specified"
   }
 }
+
+variable "default_user_networks" {
+  type        = list(string)
+  description = "List of networks allowed to connect as default user"
+  default     = ["::/0"] # Allow from anywhere by default
+}
+
+variable "admin_user_networks" {
+  type        = list(string)
+  description = "List of networks allowed to connect as admin user"
+  default     = ["::/0"] # Allow from anywhere by default
+}
