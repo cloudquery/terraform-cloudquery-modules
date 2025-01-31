@@ -19,6 +19,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  security-events: write # Required for SARIF upload
 
 jobs:
   discover:
@@ -52,6 +53,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0 # Required for some git operations
 
       - name: Configure Git for Pull Request
         if: github.event_name == 'pull_request'
@@ -126,11 +128,13 @@ jobs:
           fail_on: high
           enable_comments: true
 
+      # Only upload SARIF on push to main
       - name: Upload KICS results
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: kics-results-${{ matrix.module }}/results.sarif
+          category: ${{ matrix.module }}
 
       - name: Comment on PR
         uses: actions/github-script@v6
