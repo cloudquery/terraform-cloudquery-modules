@@ -123,10 +123,10 @@ jobs:
         uses: checkmarx/kics-github-action@v1.7.0
         with:
           path: ${{ matrix.module }}
+          config_path: .kics.config
           platform_type: terraform
           output_path: ${{ env.KICS_RESULTS_DIR }}
           output_formats: "json,sarif"
-          exclude_paths: "config/,scripts/"
           fail_on: high
           enable_comments: true
 
