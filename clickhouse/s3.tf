@@ -41,10 +41,9 @@ resource "aws_s3_object" "cluster_remote_server_configuration" {
   bucket   = aws_s3_bucket.configuration.bucket
   key      = "${each.value.name}/config.d/remote-servers.xml"
   content = templatefile("${path.module}/config/server/remote-servers.xml.tpl", {
-    server_id      = each.value.id,
     cluster_name   = var.cluster_name
     cluster_secret = random_password.cluster_secret.result
-    replica_hosts  = [for _, record in aws_route53_record.clickhouse_cluster : record.fqdn]
+    shard_hosts    = local.shard_hosts
   })
 }
 
@@ -62,11 +61,12 @@ resource "aws_s3_object" "cluster_macros" {
   bucket   = aws_s3_bucket.configuration.bucket
   key      = "${each.value.name}/config.d/macros.xml"
   content = templatefile("${path.module}/config/server/macros.xml.tpl", {
-    cluster_name = var.cluster_name
-    shard_id     = 1
-    replica_id   = each.value.id
+    cluster_name  = var.cluster_name
+    shard_index   = each.value.shard_index
+    replica_index = each.value.replica_index
   })
 }
+
 
 resource "aws_s3_object" "cluster_cloudwatch_configuration" {
   for_each = local.cluster_nodes
