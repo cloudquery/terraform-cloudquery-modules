@@ -3,6 +3,23 @@ resource "aws_s3_bucket" "configuration" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket_versioning" "configuration" {
+  bucket = aws_s3_bucket.configuration.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "configuration" {
+  bucket = aws_s3_bucket.configuration.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
 resource "aws_s3_object" "cluster_network_configuration" {
   for_each = local.cluster_nodes
   bucket   = aws_s3_bucket.configuration.bucket
