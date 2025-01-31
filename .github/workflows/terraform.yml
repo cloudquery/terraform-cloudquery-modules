@@ -88,16 +88,16 @@ jobs:
 
       - name: Generate Terraform Docs
         uses: terraform-docs/terraform-docs-action@v1
+        working-directory: ${{ matrix.module }}
         with:
-          working-directory: ${{ matrix.module }}
           output-file: README.md
           output-method: inject
           git-push: true
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
+        working-directory: ${{ matrix.module }}
         with:
-          working-directory: ${{ matrix.module }}
           soft_fail: true
 
       - name: Run checkov
