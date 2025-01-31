@@ -88,24 +88,39 @@ jobs:
 
       - name: Generate Terraform Docs
         uses: terraform-docs/terraform-docs-action@v1
-        working-directory: ${{ matrix.module }}
         with:
+          working-dir: ${{ matrix.module }}
           output-file: README.md
           output-method: inject
           git-push: true
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
-        working-directory: ${{ matrix.module }}
         with:
+          working-dir: ${{ matrix.module }}
           soft_fail: true
 
-      - name: Run checkov
-        uses: bridgecrewio/checkov-action@master
+      - name: Create results directory
+        run: |
+          cd $GITHUB_WORKSPACE
+          mkdir -p kics-results-${{ matrix.module }}
+
+      - name: Run KICS scan
+        uses: checkmarx/kics-github-action@v1.7.0
         with:
-          directory: ${{ matrix.module }}
-          soft_fail: true
-          framework: terraform
+          path: ${{ matrix.module }}
+          platform_type: terraform
+          output_path: kics-results-${{ matrix.module }}
+          output_formats: "json,sarif"
+          exclude_paths: "config/,scripts/"
+          fail_on: high
+          enable_comments: true
+
+      - name: Upload KICS results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: kics-results-${{ matrix.module }}/results.sarif
 
       - name: Comment on PR
         uses: actions/github-script@v6
