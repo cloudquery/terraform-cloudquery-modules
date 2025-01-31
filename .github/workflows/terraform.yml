@@ -19,7 +19,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  security-events: write # Required for SARIF upload
+  security-events: write
 
 jobs:
   discover:
@@ -33,7 +33,7 @@ jobs:
       - id: set-modules
         run: |
           # Find all directories containing .tf files, excluding .terraform directories
-          MODULES=$(find . -type f -name "*.tf" -not -path "*/\.*" -exec dirname {} \; | sort -u | jq -R -s -c 'split("\n")[:-1]')
+          MODULES=$(find . -type f -name "*.tf" -not -path "*/\.*" -exec dirname {} \; | sort -u | sed 's/^\.\///' | jq -R -s -c 'split("\n")[:-1]')
           echo "modules=$MODULES" >> $GITHUB_OUTPUT
 
   validate:
@@ -53,7 +53,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
-          fetch-depth: 0 # Required for some git operations
+          fetch-depth: 0
 
       - name: Configure Git for Pull Request
         if: github.event_name == 'pull_request'
@@ -112,28 +112,29 @@ jobs:
           working-dir: ${{ matrix.module }}
           soft_fail: true
 
-      - name: Create results directory
+      - name: Create KICS results directory
         run: |
-          cd $GITHUB_WORKSPACE
-          mkdir -p kics-results-${{ matrix.module }}
+          # Create results directory based on module name without leading ./
+          results_dir="${GITHUB_WORKSPACE}/kics-results-${{ matrix.module }}"
+          mkdir -p "$results_dir"
+          echo "KICS_RESULTS_DIR=$results_dir" >> $GITHUB_ENV
 
       - name: Run KICS scan
         uses: checkmarx/kics-github-action@v1.7.0
         with:
           path: ${{ matrix.module }}
           platform_type: terraform
-          output_path: kics-results-${{ matrix.module }}
+          output_path: ${{ env.KICS_RESULTS_DIR }}
           output_formats: "json,sarif"
           exclude_paths: "config/,scripts/"
           fail_on: high
           enable_comments: true
 
-      # Only upload SARIF on push to main
       - name: Upload KICS results
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: kics-results-${{ matrix.module }}/results.sarif
+          sarif_file: ${{ env.KICS_RESULTS_DIR }}/results.sarif
           category: ${{ matrix.module }}
 
       - name: Comment on PR
