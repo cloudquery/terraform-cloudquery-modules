@@ -17,7 +17,7 @@ on:
       - '.github/workflows/**'
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -49,6 +49,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Configure Git for Pull Request
+        if: github.event_name == 'pull_request'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -93,6 +102,7 @@ jobs:
           output-file: README.md
           output-method: inject
           git-push: true
+          git-commit-message: "docs: update terraform docs [skip ci]"
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
