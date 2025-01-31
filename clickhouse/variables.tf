@@ -95,3 +95,21 @@ variable "admin_user_networks" {
   description = "List of networks allowed to connect as admin user"
   default     = ["::/0"] # Allow from anywhere by default
 }
+
+variable "shards" {
+  type = list(object({
+    replica_count = number
+    weight        = optional(number, 1)
+  }))
+  description = "List of shards and their configuration. Each shard specifies how many replicas it should have and optionally its weight."
+
+  validation {
+    condition     = length(var.shards) > 0
+    error_message = "At least one shard must be configured"
+  }
+
+  validation {
+    condition     = alltrue([for shard in var.shards : shard.replica_count > 0])
+    error_message = "Each shard must have at least one replica"
+  }
+}

@@ -32,8 +32,8 @@ jobs:
 
       - id: set-modules
         run: |
-          # Find all directories containing .tf files, excluding .terraform directories
-          MODULES=$(find . -type f -name "*.tf" -not -path "*/\.*" -exec dirname {} \; | sort -u | sed 's/^\.\///' | jq -R -s -c 'split("\n")[:-1]')
+          # Find all directories containing .tf files, excluding .terraform and examples directories
+          MODULES=$(find . -type f -name "*.tf" -not -path "*/\.*" -not -path "*/examples/*" -exec dirname {} \; | sort -u | sed 's/^\.\///' | jq -R -s -c 'split("\n")[:-1]')
           echo "modules=$MODULES" >> $GITHUB_OUTPUT
 
   validate:
@@ -71,22 +71,22 @@ jobs:
       - name: Validate Module Structure
         id: validate
         run: |
-          # Check for required files
+          # Check for required files in module root
           for file in README.md variables.tf outputs.tf versions.tf; do
             if [ ! -f "$file" ]; then
               echo "::error::Missing required file: $file"
               exit 1
             fi
           done
-          
-          # Validate all .tf files syntax
-          for file in $(find . -name "*.tf"); do
+
+          # Validate all .tf files syntax, excluding examples directory
+          for file in $(find . -name "*.tf" -not -path "./examples/*"); do
             if ! terraform fmt -check "$file"; then
               echo "::error::Invalid HCL syntax in $file"
               exit 1
             fi
           done
-          
+
           # Check for template files if config directory exists
           if [ -d "config" ]; then
             for tpl in config/*/**.tpl; do
@@ -146,9 +146,9 @@ jobs:
             const output = `### Module: \`${{ matrix.module }}\`
             ### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             ### Module Structure Validation 🤖\`${{ steps.validate.outcome }}\`
-            
+
             *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,

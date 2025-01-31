@@ -1,7 +1,7 @@
 <clickhouse>
     <macros>
-        <shard>${shard_id}</shard>
-        <replica>${replica_id}</replica>
+        <shard>${shard_index}</shard>
+        <replica>${replica_index}</replica>
         <cluster>${cluster_name}</cluster>
     </macros>
 </clickhouse>
