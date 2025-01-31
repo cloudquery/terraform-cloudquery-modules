@@ -28,9 +28,11 @@ module "clickhouse_cluster" {
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
   ami                  = data.aws_ami.ubuntu.id
 
-  instance_type          = var.clickhouse_instance_type
-  vpc_security_group_ids = [aws_security_group.clickhouse_cluster.id]
-  subnet_id              = module.vpc.private_subnets[each.value.subnet_index]
+  instance_type               = var.clickhouse_instance_type
+  vpc_security_group_ids      = [aws_security_group.clickhouse_cluster.id]
+  subnet_id                   = module.vpc.private_subnets[each.value.subnet_index]
+  associate_public_ip_address = false
+
   user_data = templatefile("${path.module}/scripts/install_clickhouse.sh.tpl", {
     node_name                = each.value.name,
     clickhouse_server        = true,
@@ -61,9 +63,11 @@ module "clickhouse_keeper" {
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
   ami                  = data.aws_ami.ubuntu.id
 
-  instance_type          = var.keeper_instance_type
-  vpc_security_group_ids = [aws_security_group.clickhouse_keeper.id]
-  subnet_id              = module.vpc.private_subnets[each.value.subnet_index]
+  instance_type               = var.keeper_instance_type
+  vpc_security_group_ids      = [aws_security_group.clickhouse_keeper.id]
+  subnet_id                   = module.vpc.private_subnets[each.value.subnet_index]
+  associate_public_ip_address = false
+
   user_data = templatefile("${path.module}/scripts/install_clickhouse.sh.tpl", {
     node_name                = each.value.name,
     clickhouse_server        = false,

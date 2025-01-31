@@ -1,0 +1,157 @@
+name: "Terraform Module Validation"
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - '**/README.md'
+      - '**/**.tf'
+      - '**/**.tpl'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - '**/README.md'
+      - '**/**.tf'
+      - '**/**.tpl'
+      - '.github/workflows/**'
+
+permissions:
+  contents: write
+  pull-requests: write
+  security-events: write
+
+jobs:
+  discover:
+    name: "Discover Modules"
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.set-modules.outputs.modules }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: set-modules
+        run: |
+          # Find all directories containing .tf files, excluding .terraform directories
+          MODULES=$(find . -type f -name "*.tf" -not -path "*/\.*" -exec dirname {} \; | sort -u | sed 's/^\.\///' | jq -R -s -c 'split("\n")[:-1]')
+          echo "modules=$MODULES" >> $GITHUB_OUTPUT
+
+  validate:
+    name: "Validate"
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: ${{ fromJson(needs.discover.outputs.modules) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.module }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
+
+      - name: Configure Git for Pull Request
+        if: github.event_name == 'pull_request'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check -recursive
+
+      - name: Validate Module Structure
+        id: validate
+        run: |
+          # Check for required files
+          for file in README.md variables.tf outputs.tf versions.tf; do
+            if [ ! -f "$file" ]; then
+              echo "::error::Missing required file: $file"
+              exit 1
+            fi
+          done
+          
+          # Validate all .tf files syntax
+          for file in $(find . -name "*.tf"); do
+            if ! terraform fmt -check "$file"; then
+              echo "::error::Invalid HCL syntax in $file"
+              exit 1
+            fi
+          done
+          
+          # Check for template files if config directory exists
+          if [ -d "config" ]; then
+            for tpl in config/*/**.tpl; do
+              if [ ! -f "$tpl" ]; then
+                echo "::error::Missing template file: $tpl"
+                exit 1
+              fi
+            done
+          fi
+
+      - name: Generate Terraform Docs
+        uses: terraform-docs/terraform-docs-action@v1
+        with:
+          working-dir: ${{ matrix.module }}
+          output-file: README.md
+          output-method: inject
+          git-push: true
+          git-commit-message: "docs: update terraform docs [skip ci]"
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          working-dir: ${{ matrix.module }}
+          soft_fail: true
+
+      - name: Create KICS results directory
+        run: |
+          # Create results directory based on module name without leading ./
+          results_dir="${GITHUB_WORKSPACE}/kics-results-${{ matrix.module }}"
+          mkdir -p "$results_dir"
+          echo "KICS_RESULTS_DIR=$results_dir" >> $GITHUB_ENV
+
+      - name: Run KICS scan
+        uses: checkmarx/kics-github-action@v1.7.0
+        with:
+          path: ${{ matrix.module }}
+          config_path: .kics.config
+          platform_type: terraform
+          output_path: ${{ env.KICS_RESULTS_DIR }}
+          output_formats: "json,sarif"
+          fail_on: high
+          enable_comments: true
+
+      - name: Upload KICS results
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ env.KICS_RESULTS_DIR }}/results.sarif
+          category: ${{ matrix.module }}
+
+      - name: Comment on PR
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request' && (steps.fmt.outcome == 'failure' || steps.validate.outcome == 'failure')
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `### Module: \`${{ matrix.module }}\`
+            ### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            ### Module Structure Validation 🤖\`${{ steps.validate.outcome }}\`
+            
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
