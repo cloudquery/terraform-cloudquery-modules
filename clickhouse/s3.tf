@@ -101,3 +101,15 @@ resource "aws_s3_object" "keeper_cloudwatch_configuration" {
     file_path  = "/var/log/clickhouse-keeper/clickhouse-keeper.log"
   })
 }
+
+resource "aws_s3_object" "cluster_users_configuration" {
+  for_each = local.cluster_nodes
+  bucket   = aws_s3_bucket.configuration.bucket
+  key      = "${each.value.name}/users.xml"
+  content = templatefile("${path.module}/config/server/users.xml.tpl", {
+    default_password_hash = sha256(random_password.default_user.result)
+    admin_password_hash   = sha256(random_password.admin_user.result)
+    default_allowed_ips   = var.default_user_networks
+    admin_allowed_ips     = var.admin_user_networks
+  })
+}
