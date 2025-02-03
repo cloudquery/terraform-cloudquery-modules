@@ -1,12 +1,15 @@
+# config/server/remote-servers.xml.tpl
 <clickhouse>
     <remote_servers replace="true">
         <${cluster_name}>
             <secret>${cluster_secret}</secret>
+            %{~ for shard_index, shard in shard_hosts ~}
             <shard>
                 <internal_replication>true</internal_replication>
-                %{~ for replica in replica_hosts ~}
+                <weight>${shard.weight}</weight>
+                %{~ for replica in shard.replicas ~}
                 <replica>
-                    <host>${replica}</host>
+                    <host>${replica.host}</host>
                     %{ if enable_encryption }
                     <port>9440</port>
                     <secure>1</secure>
@@ -16,6 +19,7 @@
                 </replica>
                 %{~ endfor ~}
             </shard>
+            %{~ endfor ~}
         </${cluster_name}>
     </remote_servers>
 </clickhouse>
