@@ -113,3 +113,10 @@ resource "aws_s3_object" "cluster_users_configuration" {
     admin_allowed_ips     = var.admin_user_networks
   })
 }
+
+resource "aws_s3_object" "cluster_s3_configuration" {
+  for_each = local.cluster_nodes
+  bucket   = aws_s3_bucket.configuration.bucket
+  key      = "${each.value.name}/config.d/s3.xml"
+  content  = file("${path.module}/config/server/s3.xml.tpl")
+}
