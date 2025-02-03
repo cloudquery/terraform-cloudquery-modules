@@ -34,11 +34,21 @@ resource "aws_iam_policy" "s3_policy" {
   description = "Allow access to S3 bucket"
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["s3:*"]
-      Resource = [aws_s3_bucket.configuration.arn, "${aws_s3_bucket.configuration.arn}/*"]
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = [
+          aws_s3_bucket.configuration.arn,
+          "${aws_s3_bucket.configuration.arn}/*"
+        ]
+      }
+    ]
   })
 }
 
@@ -54,6 +64,3 @@ resource "aws_iam_role_policy_attachment" "cw_policy_attachment" {
   role       = aws_iam_role.clickhouse_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
-
-
-
