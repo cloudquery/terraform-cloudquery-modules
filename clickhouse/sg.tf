@@ -7,14 +7,35 @@ resource "aws_security_group" "nlb" {
 
 resource "aws_security_group_rule" "nlb_ingress" {
   count             = var.enable_nlb ? 1 : 0
-  description       = "Allow external traffic to the ClickHouse cluster"
+  description       = "Allow inbound traffic to NLB"
   type              = "ingress"
-  from_port         = 9000
-  to_port           = 9000
+  from_port         = var.enable_encryption ? 9440 : 9000
+  to_port           = var.enable_encryption ? 9440 : 9000
   protocol          = "tcp"
   security_group_id = aws_security_group.nlb[0].id
-  # Optional: Replace with specific CIDR blocks if possible
-  cidr_blocks = var.allowed_cidr_blocks
+  cidr_blocks       = var.nlb_type == "external" ? ["0.0.0.0/0"] : [local.vpc_cidr]
+}
+
+resource "aws_security_group_rule" "clickhouse_secure_ingress" {
+  count             = var.enable_encryption ? 1 : 0
+  description       = "Allow encrypted ClickHouse traffic"
+  type              = "ingress"
+  from_port         = 9440
+  to_port           = 9440
+  protocol          = "tcp"
+  security_group_id = aws_security_group.clickhouse_cluster.id
+  self              = true
+}
+
+resource "aws_security_group_rule" "nlb_secure_ingress" {
+  count                    = var.enable_nlb && var.enable_encryption ? 1 : 0
+  description              = "Allow encrypted traffic from NLB"
+  type                     = "ingress"
+  from_port                = 9440
+  to_port                  = 9440
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.clickhouse_cluster.id
+  source_security_group_id = aws_security_group.nlb[0].id
 }
 
 resource "aws_security_group_rule" "nlb_clickhouse_egress" {

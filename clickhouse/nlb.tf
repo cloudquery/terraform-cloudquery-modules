@@ -1,10 +1,10 @@
 resource "aws_lb" "nlb" {
   count              = var.enable_nlb ? 1 : 0
   name               = "clickhouse-nlb"
-  internal           = false
+  internal           = var.nlb_type == "internal"
   load_balancer_type = "network"
   security_groups    = [aws_security_group.nlb[0].id]
-  subnets            = module.vpc.public_subnets
+  subnets            = var.nlb_type == "internal" ? module.vpc.private_subnets : module.vpc.public_subnets
 
   enable_deletion_protection = false
 }
@@ -12,8 +12,10 @@ resource "aws_lb" "nlb" {
 resource "aws_lb_listener" "clickhouse_nlb_listener" {
   count             = var.enable_nlb ? 1 : 0
   load_balancer_arn = aws_lb.nlb[0].arn
-  port              = 9000
-  protocol          = "TCP"
+  port              = var.enable_encryption ? 9440 : 9000 # Use 9440 for TLS
+  protocol          = var.enable_encryption ? "TLS" : "TCP"
+  certificate_arn   = var.enable_encryption ? var.tls_certificate_arn : null
+  ssl_policy        = var.enable_encryption ? "ELBSecurityPolicy-TLS13-1-2-2021-06" : null
 
   default_action {
     type             = "forward"

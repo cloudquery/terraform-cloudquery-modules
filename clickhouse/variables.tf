@@ -113,3 +113,44 @@ variable "shards" {
     error_message = "Each shard must have at least one replica"
   }
 }
+
+variable "enable_encryption" {
+  type        = bool
+  description = "Enable TLS encryption for all ClickHouse communication"
+  default     = false
+}
+
+variable "nlb_type" {
+  type        = string
+  description = "Type of NLB to create - internal or external"
+  default     = "internal"
+  validation {
+    condition     = contains(["internal", "external"], var.nlb_type)
+    error_message = "nlb_type must be either 'internal' or 'external'"
+  }
+}
+
+variable "tls_certificate_arn" {
+  type        = string
+  description = "ARN of ACM certificate to use for TLS"
+  default     = ""
+}
+
+variable "cluster_domain" {
+  type        = string
+  description = "Domain name for the cluster (used for certificates)"
+  default     = ""
+}
+
+# Optional: Allow custom security settings
+variable "ssl_cert_days" {
+  type        = number
+  description = "Validity period for self-signed certificates in days"
+  default     = 365
+}
+
+variable "ssl_key_bits" {
+  type        = number
+  description = "Key size for self-signed certificates"
+  default     = 2048
+}

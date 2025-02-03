@@ -36,7 +36,11 @@ module "clickhouse_cluster" {
   user_data = templatefile("${path.module}/scripts/install_clickhouse.sh.tpl", {
     node_name                = each.value.name,
     clickhouse_server        = true,
-    clickhouse_config_bucket = aws_s3_bucket.configuration.bucket
+    clickhouse_config_bucket = aws_s3_bucket.configuration.bucket,
+    enable_encryption        = var.enable_encryption,
+    internal_domain          = local.internal_domain,
+    ssl_key_bits             = var.ssl_key_bits,
+    ssl_cert_days            = var.ssl_cert_days
   })
 
   metadata_options = {
@@ -71,7 +75,11 @@ module "clickhouse_keeper" {
   user_data = templatefile("${path.module}/scripts/install_clickhouse.sh.tpl", {
     node_name                = each.value.name,
     clickhouse_server        = false,
-    clickhouse_config_bucket = aws_s3_bucket.configuration.bucket
+    clickhouse_config_bucket = aws_s3_bucket.configuration.bucket,
+    enable_encryption        = var.enable_encryption,
+    internal_domain          = local.internal_domain,
+    ssl_key_bits             = var.ssl_key_bits,
+    ssl_cert_days            = var.ssl_cert_days
   })
 
   metadata_options = {
@@ -88,4 +96,3 @@ module "clickhouse_keeper" {
     aws_ebs_volume.keeper
   ]
 }
-
