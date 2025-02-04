@@ -1,5 +1,4 @@
 provider "aws" {
-  # Configuration options
   region = var.region
 
   default_tags {
@@ -8,5 +7,3 @@ provider "aws" {
     }
   }
 }
-
-provider "random" {}
