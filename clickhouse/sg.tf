@@ -17,14 +17,14 @@ resource "aws_security_group_rule" "nlb_ingress" {
 }
 
 resource "aws_security_group_rule" "clickhouse_secure_ingress" {
-  count             = var.enable_encryption ? 1 : 0
-  description       = "Allow encrypted ClickHouse traffic"
-  type              = "ingress"
-  from_port         = 9440
-  to_port           = 9440
-  protocol          = "tcp"
-  security_group_id = aws_security_group.clickhouse_cluster.id
-  self              = true
+  count                    = var.enable_encryption ? 1 : 0
+  description              = "Allow encrypted ClickHouse traffic"
+  type                     = "ingress"
+  from_port                = var.tcp_port_secure
+  to_port                  = var.tcp_port_secure
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.clickhouse_cluster.id
+  source_security_group_id = aws_security_group.clickhouse_cluster.id
 }
 
 resource "aws_security_group_rule" "nlb_secure_ingress" {
@@ -216,16 +216,6 @@ resource "aws_security_group_rule" "keeper_cluster_to_keeper" {
   to_port                  = var.keeper_port
   protocol                 = "tcp"
   source_security_group_id = aws_security_group.clickhouse_cluster.id
-  security_group_id        = aws_security_group.clickhouse_keeper.id
-}
-
-resource "aws_security_group_rule" "keeper_ingress" {
-  description              = "Allow ClickHouse keepers to communicate (Raft protocol)"
-  type                     = "ingress"
-  from_port                = var.keeper_raft_port
-  to_port                  = var.keeper_raft_port
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.clickhouse_keeper.id
   security_group_id        = aws_security_group.clickhouse_keeper.id
 }
 

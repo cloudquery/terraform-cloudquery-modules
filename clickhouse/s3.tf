@@ -138,6 +138,8 @@ resource "aws_s3_object" "cluster_s3_configuration" {
   bucket   = aws_s3_bucket.configuration.bucket
   key      = "${each.value.name}/config.d/s3.xml"
   content  = file("${path.module}/config/server/s3.xml.tpl")
+
+  depends_on = [aws_s3_bucket.configuration]
 }
 
 resource "aws_s3_bucket_public_access_block" "configuration" {

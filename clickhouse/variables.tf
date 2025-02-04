@@ -128,6 +128,11 @@ variable "enable_encryption" {
   type        = bool
   description = "Enable TLS encryption for all ClickHouse communication"
   default     = false
+
+  validation {
+    condition     = !var.enable_encryption || var.use_self_signed_cert || var.tls_certificate_arn != ""
+    error_message = "When encryption is enabled, either use_self_signed_cert must be true or tls_certificate_arn must be provided"
+  }
 }
 
 variable "nlb_type" {
@@ -142,7 +147,7 @@ variable "nlb_type" {
 
 variable "tls_certificate_arn" {
   type        = string
-  description = "ARN of ACM certificate to use for TLS"
+  description = "ARN of ACM certificate to use for TLS. Required when enable_encryption is true and use_self_signed_cert is false"
   default     = ""
 }
 
@@ -248,4 +253,10 @@ variable "retention_period" {
     condition     = contains([1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653], var.retention_period)
     error_message = "Retention period must be one of: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653"
   }
+}
+
+variable "use_self_signed_cert" {
+  type        = bool
+  description = "Use self-signed certificate for NLB TLS. If false, tls_certificate_arn must be provided when enable_encryption is true"
+  default     = false
 }

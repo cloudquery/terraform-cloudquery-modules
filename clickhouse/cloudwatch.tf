@@ -25,17 +25,33 @@ resource "aws_kms_key" "cloudwatch" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "Enable IAM User Permissions"
+        Sid    = "Enable Root Account Permissions"
         Effect = "Allow"
         Principal = {
           AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow Administration For Administrators"
+        Effect = "Allow"
+        Principal = {
+          AWS = data.aws_caller_identity.current.arn
         }
         Action = [
           "kms:Create*",
           "kms:Describe*",
           "kms:Enable*",
           "kms:List*",
-          "kms:Put*"
+          "kms:Put*",
+          "kms:Update*",
+          "kms:Revoke*",
+          "kms:Disable*",
+          "kms:Get*",
+          "kms:Delete*",
+          "kms:ScheduleKeyDeletion",
+          "kms:CancelKeyDeletion"
         ]
         Resource = "*"
       },
