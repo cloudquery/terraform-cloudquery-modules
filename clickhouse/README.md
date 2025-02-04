@@ -55,6 +55,7 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.82.2 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | 3.6.3 |
+| <a name="requirement_tls"></a> [tls](#requirement\_tls) | ~> 4.0 |
 
 ## Providers
 
@@ -62,6 +63,7 @@ At this stage the data should be present on all nodes of the cluster given that 
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | 5.82.2 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.6.3 |
+| <a name="provider_tls"></a> [tls](#provider\_tls) | ~> 4.0 |
 
 ## Modules
 
@@ -75,6 +77,7 @@ At this stage the data should be present on all nodes of the cluster given that 
 
 | Name | Type |
 |------|------|
+| [aws_acm_certificate.clickhouse](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/acm_certificate) | resource |
 | [aws_cloudwatch_log_group.clickhouse](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/cloudwatch_log_group) | resource |
 | [aws_cloudwatch_log_group.keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/cloudwatch_log_group) | resource |
 | [aws_cloudwatch_log_group.vpc_flow_log](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/cloudwatch_log_group) | resource |
@@ -136,7 +139,6 @@ At this stage the data should be present on all nodes of the cluster given that 
 | [aws_security_group_rule.keeper_allow_all_outbound](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.keeper_cluster_to_keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.keeper_egress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.keeper_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.nlb_clickhouse_egress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.nlb_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.nlb_secure_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
@@ -145,6 +147,8 @@ At this stage the data should be present on all nodes of the cluster given that 
 | [random_password.admin_user](https://registry.terraform.io/providers/hashicorp/random/3.6.3/docs/resources/password) | resource |
 | [random_password.cluster_secret](https://registry.terraform.io/providers/hashicorp/random/3.6.3/docs/resources/password) | resource |
 | [random_password.default_user](https://registry.terraform.io/providers/hashicorp/random/3.6.3/docs/resources/password) | resource |
+| [tls_private_key.clickhouse](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
+| [tls_self_signed_cert.clickhouse](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/self_signed_cert) | resource |
 | [aws_ami.ubuntu](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/data-sources/ami) | data source |
 | [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/data-sources/availability_zones) | data source |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/data-sources/caller_identity) | data source |
@@ -186,7 +190,8 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to all resources | `map(string)` | <pre>{<br/>  "Environment": "production",<br/>  "ManagedBy": "terraform"<br/>}</pre> | no |
 | <a name="input_tcp_port"></a> [tcp\_port](#input\_tcp\_port) | Native Protocol port for client-server communication | `number` | `9000` | no |
 | <a name="input_tcp_port_secure"></a> [tcp\_port\_secure](#input\_tcp\_port\_secure) | Native protocol SSL/TLS port | `number` | `9440` | no |
-| <a name="input_tls_certificate_arn"></a> [tls\_certificate\_arn](#input\_tls\_certificate\_arn) | ARN of ACM certificate to use for TLS | `string` | `""` | no |
+| <a name="input_tls_certificate_arn"></a> [tls\_certificate\_arn](#input\_tls\_certificate\_arn) | ARN of ACM certificate to use for TLS. Required when enable\_encryption is true and use\_self\_signed\_cert is false | `string` | `""` | no |
+| <a name="input_use_self_signed_cert"></a> [use\_self\_signed\_cert](#input\_use\_self\_signed\_cert) | Use self-signed certificate for NLB TLS. If false, tls\_certificate\_arn must be provided when enable\_encryption is true | `bool` | `false` | no |
 
 ## Outputs
 
