@@ -9,30 +9,19 @@ resource "aws_security_group_rule" "nlb_ingress" {
   count             = var.enable_nlb ? 1 : 0
   description       = "Allow inbound traffic to NLB"
   type              = "ingress"
-  from_port         = var.enable_encryption ? 9440 : 9000
-  to_port           = var.enable_encryption ? 9440 : 9000
+  from_port         = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
+  to_port           = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
   protocol          = "tcp"
   security_group_id = aws_security_group.nlb[0].id
   cidr_blocks       = var.nlb_type == "external" ? ["0.0.0.0/0"] : [local.vpc_cidr]
-}
-
-resource "aws_security_group_rule" "clickhouse_secure_ingress" {
-  count                    = var.enable_encryption ? 1 : 0
-  description              = "Allow encrypted ClickHouse traffic"
-  type                     = "ingress"
-  from_port                = var.tcp_port_secure
-  to_port                  = var.tcp_port_secure
-  protocol                 = "tcp"
-  security_group_id        = aws_security_group.clickhouse_cluster.id
-  source_security_group_id = aws_security_group.clickhouse_cluster.id
 }
 
 resource "aws_security_group_rule" "nlb_secure_ingress" {
   count                    = var.enable_nlb && var.enable_encryption ? 1 : 0
   description              = "Allow encrypted traffic from NLB"
   type                     = "ingress"
-  from_port                = 9440
-  to_port                  = 9440
+  from_port                = var.tcp_port_secure
+  to_port                  = var.tcp_port_secure
   protocol                 = "tcp"
   security_group_id        = aws_security_group.clickhouse_cluster.id
   source_security_group_id = aws_security_group.nlb[0].id
@@ -54,6 +43,7 @@ resource "aws_security_group" "clickhouse_cluster" {
   description = "Security group for the ClickHouse cluster"
   vpc_id      = module.vpc.vpc_id
 
+  # Prometheus metrics
   ingress {
     description = "Prometheus metrics"
     from_port   = var.prometheus_port
@@ -62,65 +52,39 @@ resource "aws_security_group" "clickhouse_cluster" {
     self        = true
   }
 
+  # Dynamic block for encrypted traffic
   dynamic "ingress" {
     for_each = var.enable_encryption ? [1] : []
     content {
-      from_port = var.https_port
-      to_port   = var.https_port
-      protocol  = "tcp"
-      self      = true
+      description = "Secure ClickHouse traffic"
+      from_port   = var.tcp_port_secure
+      to_port     = var.tcp_port_secure
+      protocol    = "tcp"
+      self        = true
     }
   }
 
-  dynamic "ingress" {
-    for_each = var.enable_encryption ? [1] : []
-    content {
-      from_port = var.tcp_port_secure
-      to_port   = var.tcp_port_secure
-      protocol  = "tcp"
-      self      = true
-    }
-  }
-
-  dynamic "ingress" {
-    for_each = var.enable_encryption ? [1] : []
-    content {
-      from_port = var.interserver_https_port
-      to_port   = var.interserver_https_port
-      protocol  = "tcp"
-      self      = true
-    }
-  }
-
+  # Dynamic block for unencrypted traffic
   dynamic "ingress" {
     for_each = var.enable_encryption ? [] : [1]
     content {
-      from_port = var.http_port
-      to_port   = var.http_port
-      protocol  = "tcp"
-      self      = true
+      description = "ClickHouse traffic"
+      from_port   = var.tcp_port
+      to_port     = var.tcp_port
+      protocol    = "tcp"
+      self        = true
     }
   }
 
-  dynamic "ingress" {
-    for_each = var.enable_encryption ? [] : [1]
-    content {
-      from_port = var.tcp_port
-      to_port   = var.tcp_port
-      protocol  = "tcp"
-      self      = true
-    }
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
-  dynamic "ingress" {
-    for_each = var.enable_encryption ? [] : [1]
-    content {
-      from_port = var.interserver_http_port
-      to_port   = var.interserver_http_port
-      protocol  = "tcp"
-      self      = true
-    }
-  }
+  tags = var.tags
 }
 
 resource "aws_security_group_rule" "cluster_allow_all_outbound" {
