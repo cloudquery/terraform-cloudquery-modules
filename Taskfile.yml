@@ -15,14 +15,34 @@ tasks:
       - task --list
     silent: true
 
+  check-tools:
+    desc: Check if required tools are installed
+    cmds:
+      - |
+        missing_tools=()
+        for tool in terraform tflint checkov; do
+          if ! command -v $tool >/dev/null 2>&1; then
+            missing_tools+=($tool)
+          fi
+        done
+        if [ ${#missing_tools[@]} -ne 0 ]; then
+          echo "Missing required tools: ${missing_tools[*]}"
+          echo "Please run 'task setup' to install missing tools"
+          exit 1
+        fi
+    silent: true
+
   init:
     desc: Initialize Terraform working directory
+    deps: [check-tools]
     cmds:
       - terraform init
+      - tflint --init
       - terraform workspace select {{.ENVIRONMENT}} 2>/dev/null || terraform workspace new {{.ENVIRONMENT}}
 
   validate:
     desc: Validate Terraform configurations
+    deps: [check-tools, init]
     cmds:
       - terraform fmt -check -diff -recursive
       - terraform validate
@@ -69,6 +89,7 @@ tasks:
 
   lint:
     desc: Run all linters
+    deps: [init]
     cmds:
       - task: lint:tf
       - task: lint:tflint
@@ -81,6 +102,7 @@ tasks:
 
   lint:tflint:
     desc: Run tflint
+    deps: [init]
     cmds:
       - tflint --recursive
 
