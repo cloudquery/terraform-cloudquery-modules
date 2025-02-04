@@ -13,14 +13,16 @@
 
     # Secure ports configuration
     %{ if enable_encryption }
-    <https_port>8443</https_port>
-    <tcp_port_secure>9440</tcp_port_secure>
-    <interserver_https_port>9010</interserver_https_port>
+    <https_port>${https_port}</https_port>
+    <tcp_port_secure>${tcp_port_secure}</tcp_port_secure>
+    <interserver_https_port>${interserver_https_port}</interserver_https_port>
     %{ else }
-    <http_port>8123</http_port>
-    <tcp_port>9000</tcp_port>
-    <interserver_http_port>9009</interserver_http_port>
+    <http_port>${http_port}</http_port>
+    <tcp_port>${tcp_port}</tcp_port>
+    <interserver_http_port>${interserver_http_port}</interserver_http_port>
     %{ endif }
+
+    <prometheus_port>${prometheus_port}</prometheus_port>
 
     # Disable emulation ports
     <!--mysql_port>9004</mysql_port-->

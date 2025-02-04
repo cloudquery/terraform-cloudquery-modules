@@ -12,7 +12,7 @@ resource "aws_lb" "nlb" {
 resource "aws_lb_listener" "clickhouse_nlb_listener" {
   count             = var.enable_nlb ? 1 : 0
   load_balancer_arn = aws_lb.nlb[0].arn
-  port              = var.enable_encryption ? 9440 : 9000 # Use 9440 for TLS
+  port              = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
   protocol          = var.enable_encryption ? "TLS" : "TCP"
   certificate_arn   = var.enable_encryption ? var.tls_certificate_arn : null
   ssl_policy        = var.enable_encryption ? "ELBSecurityPolicy-TLS13-1-2-2021-06" : null
@@ -26,16 +26,16 @@ resource "aws_lb_listener" "clickhouse_nlb_listener" {
 resource "aws_lb_target_group" "clickhouse_nlb_target_group" {
   count       = var.enable_nlb ? 1 : 0
   name        = "clickhouse-nlb-tg"
-  port        = 9000
+  port        = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
   protocol    = "TCP"
   target_type = "instance"
   vpc_id      = module.vpc.vpc_id
 
   health_check {
     interval            = 30
-    path                = "/ping"
-    port                = 8123
+    port                = var.http_port
     protocol            = "HTTP"
+    path                = "/ping"
     matcher             = "200-299"
     timeout             = 5
     healthy_threshold   = 2

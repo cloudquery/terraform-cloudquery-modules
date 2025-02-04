@@ -53,6 +53,74 @@ resource "aws_security_group" "clickhouse_cluster" {
   name        = "clickhouse_cluster-sg"
   description = "Security group for the ClickHouse cluster"
   vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description = "Prometheus metrics"
+    from_port   = var.prometheus_port
+    to_port     = var.prometheus_port
+    protocol    = "tcp"
+    self        = true
+  }
+
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [1] : []
+    content {
+      from_port = var.https_port
+      to_port   = var.https_port
+      protocol  = "tcp"
+      self      = true
+    }
+  }
+
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [1] : []
+    content {
+      from_port = var.tcp_port_secure
+      to_port   = var.tcp_port_secure
+      protocol  = "tcp"
+      self      = true
+    }
+  }
+
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [1] : []
+    content {
+      from_port = var.interserver_https_port
+      to_port   = var.interserver_https_port
+      protocol  = "tcp"
+      self      = true
+    }
+  }
+
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [] : [1]
+    content {
+      from_port = var.http_port
+      to_port   = var.http_port
+      protocol  = "tcp"
+      self      = true
+    }
+  }
+
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [] : [1]
+    content {
+      from_port = var.tcp_port
+      to_port   = var.tcp_port
+      protocol  = "tcp"
+      self      = true
+    }
+  }
+
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [] : [1]
+    content {
+      from_port = var.interserver_http_port
+      to_port   = var.interserver_http_port
+      protocol  = "tcp"
+      self      = true
+    }
+  }
 }
 
 resource "aws_security_group_rule" "cluster_allow_all_outbound" {
@@ -88,21 +156,21 @@ resource "aws_security_group_rule" "clickhouse_nlb_ingress" {
 }
 
 resource "aws_security_group_rule" "clickhouse_ingress" {
-  description       = "Allow ClickHouse cluster to communicate with the other clickhouse nodes"
+  description       = "Allow ClickHouse cluster to communicate with other clickhouse nodes"
   type              = "ingress"
-  from_port         = 9000
-  to_port           = 9000
-  protocol          = "-1"
+  from_port         = var.tcp_port
+  to_port           = var.tcp_port
+  protocol          = "tcp"
   security_group_id = aws_security_group.clickhouse_cluster.id
   self              = true
 }
 
 resource "aws_security_group_rule" "clickhouse_egress" {
-  description       = "Allow ClickHouse cluster to communicate with the other clikchouse nodes"
+  description       = "Allow ClickHouse cluster to communicate with other clickhouse nodes"
   type              = "egress"
-  from_port         = 9000
-  to_port           = 9000
-  protocol          = "-1"
+  from_port         = var.tcp_port
+  to_port           = var.tcp_port
+  protocol          = "tcp"
   security_group_id = aws_security_group.clickhouse_cluster.id
   self              = true
 }
@@ -111,15 +179,53 @@ resource "aws_security_group" "clickhouse_keeper" {
   name        = "clickhouse-keeper-sg"
   description = "Security group for the ClickHouse keepers"
   vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description = "Keeper Raft protocol"
+    from_port   = var.keeper_raft_port
+    to_port     = var.keeper_raft_port
+    protocol    = "tcp"
+    self        = true
+  }
+
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [1] : []
+    content {
+      from_port = var.keeper_port_secure
+      to_port   = var.keeper_port_secure
+      protocol  = "tcp"
+      self      = true
+    }
+  }
+
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [] : [1]
+    content {
+      from_port = var.keeper_port
+      to_port   = var.keeper_port
+      protocol  = "tcp"
+      self      = true
+    }
+  }
 }
 
 resource "aws_security_group_rule" "keeper_cluster_to_keeper" {
-  description              = "Allow ClickHouse cluster to communicate with the keepers"
+  description              = "Allow ClickHouse cluster to communicate with keepers"
   type                     = "ingress"
-  from_port                = 9181
-  to_port                  = 9181
-  protocol                 = "-1"
+  from_port                = var.keeper_port
+  to_port                  = var.keeper_port
+  protocol                 = "tcp"
   source_security_group_id = aws_security_group.clickhouse_cluster.id
+  security_group_id        = aws_security_group.clickhouse_keeper.id
+}
+
+resource "aws_security_group_rule" "keeper_ingress" {
+  description              = "Allow ClickHouse keepers to communicate (Raft protocol)"
+  type                     = "ingress"
+  from_port                = var.keeper_raft_port
+  to_port                  = var.keeper_raft_port
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.clickhouse_keeper.id
   security_group_id        = aws_security_group.clickhouse_keeper.id
 }
 
@@ -131,16 +237,6 @@ resource "aws_security_group_rule" "cluster_cluster_to_keeper" {
   protocol                 = "-1"
   source_security_group_id = aws_security_group.clickhouse_keeper.id
   security_group_id        = aws_security_group.clickhouse_cluster.id
-}
-
-resource "aws_security_group_rule" "keeper_ingress" {
-  description              = "Allow ClickHouse keepers to communicate with each other (Raft protocol)"
-  type                     = "ingress"
-  from_port                = 9234
-  to_port                  = 9234
-  protocol                 = "-1"
-  source_security_group_id = aws_security_group.clickhouse_keeper.id
-  security_group_id        = aws_security_group.clickhouse_keeper.id
 }
 
 resource "aws_security_group_rule" "keeper_egress" {

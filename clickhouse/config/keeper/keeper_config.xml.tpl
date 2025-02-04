@@ -1,12 +1,12 @@
 <clickhouse>
     <keeper_server>
         %{ if enable_encryption }
-        <tcp_port_secure>9281</tcp_port_secure>
+        <tcp_port_secure>${keeper_port_secure}</tcp_port_secure>
         %{ else }
-        <tcp_port>9181</tcp_port>
+        <tcp_port>${keeper_port}</tcp_port>
         %{ endif }
-
         <server_id>${server_id}</server_id>
+
         <log_storage_path>/var/lib/clickhouse/coordination/log</log_storage_path>
         <snapshot_storage_path>/var/lib/clickhouse/coordination/snapshots</snapshot_storage_path>
 
@@ -24,10 +24,10 @@
             <server>
                 <id>${keeper.id}</id>
                 <hostname>${keeper.host}</hostname>
-                <port>9444</port>
+                <port>${keeper_raft_port}</port>
             </server>
             %{~ endfor ~}
-        </raft_configuration>
+        </raft_configuration>>
     </keeper_server>
 
     %{ if enable_encryption }

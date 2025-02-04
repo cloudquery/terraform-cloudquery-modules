@@ -1,6 +1,8 @@
 resource "aws_s3_bucket" "configuration" {
-  bucket_prefix = "clickhouse"
+  bucket_prefix = "clickhouse-config"
   force_destroy = true
+
+  tags = var.tags
 }
 
 resource "aws_s3_bucket_versioning" "configuration" {
@@ -25,9 +27,17 @@ resource "aws_s3_object" "cluster_network_configuration" {
   bucket   = aws_s3_bucket.configuration.bucket
   key      = "${each.value.name}/config.d/network-and-logging.xml"
   content = templatefile("${path.module}/config/server/network-and-logging.xml.tpl", {
-    server_id    = each.value.id,
-    cluster_name = var.cluster_name
-    node_name    = each.value.name
+    server_id              = each.value.id
+    cluster_name           = var.cluster_name
+    node_name              = each.value.name
+    enable_encryption      = var.enable_encryption
+    http_port              = var.http_port
+    https_port             = var.https_port
+    tcp_port               = var.tcp_port
+    tcp_port_secure        = var.tcp_port_secure
+    prometheus_port        = var.prometheus_port
+    interserver_http_port  = var.interserver_http_port
+    interserver_https_port = var.interserver_https_port
   })
 }
 
@@ -41,9 +51,12 @@ resource "aws_s3_object" "cluster_remote_server_configuration" {
   bucket   = aws_s3_bucket.configuration.bucket
   key      = "${each.value.name}/config.d/remote-servers.xml"
   content = templatefile("${path.module}/config/server/remote-servers.xml.tpl", {
-    cluster_name   = var.cluster_name
-    cluster_secret = random_password.cluster_secret.result
-    shard_hosts    = local.shard_hosts
+    cluster_name      = var.cluster_name
+    cluster_secret    = random_password.cluster_secret.result
+    shard_hosts       = local.shard_hosts
+    enable_encryption = var.enable_encryption
+    tcp_port          = var.tcp_port
+    tcp_port_secure   = var.tcp_port_secure
   })
 }
 
@@ -52,7 +65,10 @@ resource "aws_s3_object" "cluster_use_keeper_configuration" {
   bucket   = aws_s3_bucket.configuration.bucket
   key      = "${each.value.name}/config.d/use-keeper.xml"
   content = templatefile("${path.module}/config/server/use-keeper.xml.tpl", {
-    keeper_nodes = [for _, record in aws_route53_record.clickhouse_keeper : record.fqdn]
+    keeper_nodes       = [for _, record in aws_route53_record.clickhouse_keeper : record.fqdn]
+    enable_encryption  = var.enable_encryption
+    keeper_port        = var.keeper_port
+    keeper_port_secure = var.keeper_port_secure
   })
 }
 
@@ -66,7 +82,6 @@ resource "aws_s3_object" "cluster_macros" {
     replica_index = each.value.replica_index
   })
 }
-
 
 resource "aws_s3_object" "cluster_cloudwatch_configuration" {
   for_each = local.cluster_nodes
@@ -85,8 +100,12 @@ resource "aws_s3_object" "keeper_configuration" {
   bucket   = aws_s3_bucket.configuration.bucket
   key      = "${each.value.name}/keeper_config.xml"
   content = templatefile("${path.module}/config/keeper/keeper_config.xml.tpl", {
-    server_id    = each.value.id
-    keeper_nodes = local.keeper_nodes
+    server_id          = each.value.id
+    keeper_nodes       = local.keeper_nodes
+    enable_encryption  = var.enable_encryption
+    keeper_port        = var.keeper_port
+    keeper_port_secure = var.keeper_port_secure
+    keeper_raft_port   = var.keeper_raft_port
   })
 }
 
@@ -119,4 +138,28 @@ resource "aws_s3_object" "cluster_s3_configuration" {
   bucket   = aws_s3_bucket.configuration.bucket
   key      = "${each.value.name}/config.d/s3.xml"
   content  = file("${path.module}/config/server/s3.xml.tpl")
+}
+
+resource "aws_s3_bucket_public_access_block" "configuration" {
+  bucket = aws_s3_bucket.configuration.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_logging" "configuration" {
+  bucket = aws_s3_bucket.configuration.id
+
+  target_bucket = aws_s3_bucket.logs.id
+  target_prefix = "s3-access-logs/"
+}
+
+# Logging bucket
+resource "aws_s3_bucket" "logs" {
+  bucket_prefix = "clickhouse-logs"
+  force_destroy = true
+
+  tags = var.tags
 }

@@ -4,10 +4,10 @@
         <node>
             <host>${keeper}</host>
             %{ if enable_encryption }
-            <port>9281</port>
+            <port>${keeper_port_secure}</port>
             <secure>1</secure>
             %{ else }
-            <port>9181</port>
+            <port>${keeper_port}</port>
             %{ endif }
         </node>
         %{~ endfor ~}

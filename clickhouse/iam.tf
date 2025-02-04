@@ -28,10 +28,9 @@ resource "aws_iam_instance_profile" "clickhouse_keeper_profile" {
   role = aws_iam_role.clickhouse_role.name
 }
 
-// Allow profile access to s3 bucket
 resource "aws_iam_policy" "s3_policy" {
-  name        = "s3-policy"
-  description = "Allow access to S3 bucket"
+  name        = "clickhouse-s3-policy"
+  description = "Allow access to ClickHouse configuration bucket"
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -63,4 +62,9 @@ resource "aws_iam_policy_attachment" "s3_policy_attachment" {
 resource "aws_iam_role_policy_attachment" "cw_policy_attachment" {
   role       = aws_iam_role.clickhouse_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "kms_policy" {
+  role       = aws_iam_role.clickhouse_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSKeyManagementServicePowerUser"
 }
