@@ -1,0 +1,157 @@
+version: '3'
+
+vars:
+  TERRAFORM_VERSION: 1.5.0
+  AWS_REGION: '{{.AWS_REGION | default "us-west-2"}}'
+  ENVIRONMENT: '{{.ENVIRONMENT | default "dev"}}'
+
+env:
+  AWS_REGION: '{{.AWS_REGION}}'
+  TF_WORKSPACE: '{{.ENVIRONMENT}}'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  init:
+    desc: Initialize Terraform working directory
+    cmds:
+      - terraform init
+      - terraform workspace select {{.ENVIRONMENT}} 2>/dev/null || terraform workspace new {{.ENVIRONMENT}}
+
+  validate:
+    desc: Validate Terraform configurations
+    cmds:
+      - terraform fmt -check -diff -recursive
+      - terraform validate
+      - tflint
+      - checkov -d .
+
+  plan:
+    desc: Create Terraform plan
+    deps: [validate]
+    cmds:
+      - terraform plan -out=tfplan
+    env:
+      TF_VAR_environment: '{{.ENVIRONMENT}}'
+
+  apply:
+    desc: Apply Terraform plan
+    cmds:
+      - terraform apply tfplan
+    preconditions:
+      - test -f tfplan
+
+  destroy:
+    desc: Destroy infrastructure
+    interactive: true
+    cmds:
+      - echo "Are you sure you want to destroy {{.ENVIRONMENT}} environment? (y/n)"
+      - read -r response
+      - |
+        if [ "$response" = "y" ]; then
+          terraform destroy -auto-approve
+        else
+          echo "Destroy cancelled"
+          exit 1
+        fi
+    env:
+      TF_VAR_environment: '{{.ENVIRONMENT}}'
+
+  clean:
+    desc: Clean up generated files
+    cmds:
+      - rm -rf .terraform tfplan
+      - find . -type f -name ".terraform.lock.hcl" -delete
+      - find . -type f -name "terraform.tfstate*" -delete
+
+  lint:
+    desc: Run all linters
+    cmds:
+      - task: lint:tf
+      - task: lint:tflint
+      - task: lint:checkov
+
+  lint:tf:
+    desc: Run terraform fmt
+    cmds:
+      - terraform fmt -recursive
+
+  lint:tflint:
+    desc: Run tflint
+    cmds:
+      - tflint --recursive
+
+  lint:checkov:
+    desc: Run checkov
+    cmds:
+      - checkov -d .
+
+  docs:
+    desc: Generate Terraform documentation
+    cmds:
+      - terraform-docs markdown . > TERRAFORM.md
+
+  test:
+    desc: Run tests
+    cmds:
+      - terratest/run_tests.sh
+    sources:
+      - "**/*.tf"
+      - "test/**/*"
+    generates:
+      - test/reports/**/*
+
+  setup:
+    desc: Install required tools
+    cmds:
+      - |
+        if ! command -v tflint >/dev/null 2>&1; then
+          curl -L "$(curl -Ls https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep -o -E "https://.+?_linux_amd64.zip")" -o tflint.zip
+          unzip tflint.zip
+          sudo mv tflint /usr/local/bin/
+          rm tflint.zip
+        fi
+      - |
+        if ! command -v terraform-docs >/dev/null 2>&1; then
+          curl -Lo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/latest/download/terraform-docs-linux-amd64.tar.gz
+          tar -xzf terraform-docs.tar.gz
+          sudo mv terraform-docs /usr/local/bin/
+          rm terraform-docs.tar.gz
+        fi
+      - |
+        if ! command -v checkov >/dev/null 2>&1; then
+          pip3 install checkov
+        fi
+
+  pre-commit:
+    desc: Run pre-commit checks
+    cmds:
+      - task: validate
+      - task: lint
+      - task: docs
+
+  deploy:
+    desc: Deploy to specific environment
+    cmds:
+      - task: init
+      - task: plan
+      - task: apply
+    env:
+      TF_VAR_environment: '{{.ENVIRONMENT}}'
+
+  cost-estimate:
+    desc: Estimate infrastructure costs
+    cmds:
+      - infracost breakdown --path .
+
+  security-scan:
+    desc: Run security scans
+    cmds:
+      - task: lint:checkov
+      - terraform plan -out=tfplan
+      - terraform show -json tfplan | jq '.' > tfplan.json
+      - checkov -f tfplan.json
+      - rm tfplan.json
