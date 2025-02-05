@@ -78,10 +78,10 @@ setup_ebs_volume() {
     DEVICE_NAME=""
     if [ -e "/dev/xvdh" ]; then
         DEVICE_NAME="/dev/xvdh"
-        log "Found traditional device naming: ${DEVICE_NAME}"
+        log "Found traditional device naming: $${DEVICE_NAME}"
     elif [ -e "/dev/nvme1n1" ]; then
         DEVICE_NAME="/dev/nvme1n1"
-        log "Found NVMe device naming: ${DEVICE_NAME}"
+        log "Found NVMe device naming: $${DEVICE_NAME}"
     else
         # List available devices for debugging
         log "Available devices:"
@@ -93,17 +93,17 @@ setup_ebs_volume() {
     fi
 
     # Format and mount the volume
-    log "Formatting ${DEVICE_NAME} with XFS"
-    mkfs.xfs ${DEVICE_NAME}
+    log "Formatting $${DEVICE_NAME} with XFS"
+    mkfs.xfs $${DEVICE_NAME}
 
     log "Creating mount point at /var/lib/clickhouse"
     mkdir -p /var/lib/clickhouse
 
-    log "Mounting ${DEVICE_NAME} to /var/lib/clickhouse"
-    mount ${DEVICE_NAME} /var/lib/clickhouse
+    log "Mounting $${DEVICE_NAME} to /var/lib/clickhouse"
+    mount $${DEVICE_NAME} /var/lib/clickhouse
 
     log "Adding to fstab"
-    echo "${DEVICE_NAME}  /var/lib/clickhouse  xfs  defaults  0  0" >> /etc/fstab
+    echo "$${DEVICE_NAME}  /var/lib/clickhouse  xfs  defaults  0  0" >> /etc/fstab
 
     log "Setting permissions"
     chown -R clickhouse:clickhouse /var/lib/clickhouse

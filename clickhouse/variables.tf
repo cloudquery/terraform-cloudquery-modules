@@ -260,3 +260,30 @@ variable "use_self_signed_cert" {
   description = "Use self-signed certificate for NLB TLS. If false, tls_certificate_arn must be provided when enable_encryption is true"
   default     = false
 }
+
+variable "key_name" {
+  type        = string
+  description = "Name of an AWS key pair to use for SSH access (must exist in the AWS account)"
+  default     = "" # Empty string means no key pair will be used
+}
+
+variable "ssh_access" {
+  type = object({
+    enabled = bool
+    # cidr_blocks can be null to use VPC CIDR, or a list of explicit CIDRs
+    cidr_blocks = list(string)
+    # if true, adds VPC CIDR to the provided cidr_blocks
+    include_vpc_cidr = bool
+  })
+  description = "SSH access configuration. Set enabled=false to disable SSH access, or configure cidr_blocks for access control."
+  default = {
+    enabled          = false
+    cidr_blocks      = []
+    include_vpc_cidr = true
+  }
+
+  validation {
+    condition     = var.ssh_access.enabled == false || length(var.ssh_access.cidr_blocks) > 0 || var.ssh_access.include_vpc_cidr
+    error_message = "When SSH access is enabled, either cidr_blocks must be provided or include_vpc_cidr must be true"
+  }
+}

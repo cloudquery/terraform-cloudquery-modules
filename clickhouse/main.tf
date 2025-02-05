@@ -27,6 +27,7 @@ module "clickhouse_cluster" {
   name                 = each.key
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
   ami                  = data.aws_ami.ubuntu.id
+  key_name             = var.key_name != "" ? var.key_name : null
 
   instance_type               = var.clickhouse_instance_type
   vpc_security_group_ids      = [aws_security_group.clickhouse_cluster.id]
@@ -46,7 +47,7 @@ module "clickhouse_cluster" {
   metadata_options = {
     http_endpoint               = "enabled"  # Enable IMDS
     http_tokens                 = "required" # IMDSv2 (more secure)
-    http_put_response_hop_limit = 1          # Restrict token usage
+    http_put_response_hop_limit = 2          # Restrict token usage
     instance_metadata_tags      = "enabled"  # Allow tag access
   }
 
@@ -66,6 +67,7 @@ module "clickhouse_keeper" {
   name                 = each.key
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
   ami                  = data.aws_ami.ubuntu.id
+  key_name             = var.key_name != "" ? var.key_name : null
 
   instance_type               = var.keeper_instance_type
   vpc_security_group_ids      = [aws_security_group.clickhouse_keeper.id]
@@ -85,7 +87,7 @@ module "clickhouse_keeper" {
   metadata_options = {
     http_endpoint               = "enabled"  # Enable IMDS
     http_tokens                 = "required" # IMDSv2 (more secure)
-    http_put_response_hop_limit = 1          # Restrict token usage
+    http_put_response_hop_limit = 2          # Restrict token usage
     instance_metadata_tags      = "enabled"  # Allow tag access
   }
 
