@@ -115,6 +115,9 @@ setup_clickhouse_server() {
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/config.d/" "$${CLICKHOUSE_CONFIG_DIR}" --recursive
 
+    # Copy certificates
+    setup_certificates "server"
+
     # Start service
     service clickhouse-server start
 }
@@ -141,6 +144,9 @@ setup_clickhouse_keeper() {
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/keeper_config.xml" "$${KEEPER_CONFIG_PATH}"
 
+    # Copy certificates
+    setup_certificates "keeper"
+
     # Start service
     systemctl enable clickhouse-keeper
     systemctl start clickhouse-keeper
@@ -157,15 +163,25 @@ start_cloudwatch_agent() {
 
 setup_certificates() {
     if [ "${enable_encryption}" = true ]; then
+        local cert_base_dir=""
+        if [ "$1" = "server" ]; then
+            cert_base_dir="/etc/clickhouse-server"
+        elif [ "$1" = "keeper" ]; then
+            cert_base_dir="/etc/clickhouse-keeper"
+        else
+            log "Invalid certificate type. Must be 'server' or 'keeper'."
+            exit 1
+        fi
+
         openssl req -x509 -newkey rsa:${ssl_key_bits} \
             -nodes -days ${ssl_cert_days} \
-            -keyout /etc/clickhouse-server/server.key \
-            -out /etc/clickhouse-server/server.crt \
+            -keyout "$cert_base_dir/server.key" \
+            -out "$cert_base_dir/server.crt" \
             -subj "/CN=${node_name}.${internal_domain}"
 
-        chown clickhouse:clickhouse /etc/clickhouse-server/server.key
-        chown clickhouse:clickhouse /etc/clickhouse-server/server.crt
-        chmod 600 /etc/clickhouse-server/server.key
+        chown clickhouse:clickhouse "$cert_base_dir/server.key"
+        chown clickhouse:clickhouse "$cert_base_dir/server.crt"
+        chmod 600 "$cert_base_dir/server.key"
     fi
 }
 
@@ -186,6 +202,5 @@ else
     setup_clickhouse_keeper
 fi
 
-setup_certificates
 start_cloudwatch_agent
 log "Setup completed successfully!"
