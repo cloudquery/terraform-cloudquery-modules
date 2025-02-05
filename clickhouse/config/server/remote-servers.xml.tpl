@@ -1,4 +1,3 @@
-# config/server/remote-servers.xml.tpl
 <clickhouse>
     <remote_servers replace="true">
         <${cluster_name}>

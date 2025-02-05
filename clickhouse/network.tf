@@ -17,6 +17,17 @@ resource "aws_network_acl_rule" "private_ingress" {
   to_port        = 0
 }
 
+# Inbound return traffic
+resource "aws_network_acl_rule" "private_ingress_ephemeral" {
+  network_acl_id = aws_network_acl.private.id
+  rule_number    = 101
+  protocol       = "tcp"
+  rule_action    = "allow"
+  cidr_block     = "0.0.0.0/0"
+  from_port      = 1024
+  to_port        = 65535
+}
+
 # Outbound rules for private subnets
 resource "aws_network_acl_rule" "private_egress" {
   network_acl_id = aws_network_acl.private.id
@@ -41,7 +52,7 @@ resource "aws_flow_log" "vpc" {
 
 # CloudWatch Log Group for VPC Flow Logs
 resource "aws_cloudwatch_log_group" "vpc_flow_log" {
-  name              = "/aws/vpc/flow-log"
+  name_prefix       = "/aws/vpc/flow-log"
   retention_in_days = var.retention_period
   kms_key_id        = aws_kms_key.cloudwatch.arn
 
