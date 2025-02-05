@@ -68,18 +68,55 @@ install_cloudwatch_agent() {
     rm -f ./amazon-cloudwatch-agent.deb
 }
 
+setup_ebs_volume() {
+    log "Setting up EBS volume..."
+
+    # Wait for device to be available
+    sleep 10
+
+    # Find the actual device name - could be xvdh or nvme
+    DEVICE_NAME=""
+    if [ -e "/dev/xvdh" ]; then
+        DEVICE_NAME="/dev/xvdh"
+        log "Found traditional device naming: ${DEVICE_NAME}"
+    elif [ -e "/dev/nvme1n1" ]; then
+        DEVICE_NAME="/dev/nvme1n1"
+        log "Found NVMe device naming: ${DEVICE_NAME}"
+    else
+        # List available devices for debugging
+        log "Available devices:"
+        lsblk
+        ls -la /dev/nvme* || true
+        ls -la /dev/xvd* || true
+        log "Error: Could not find EBS volume device"
+        exit 1
+    fi
+
+    # Format and mount the volume
+    log "Formatting ${DEVICE_NAME} with XFS"
+    mkfs.xfs ${DEVICE_NAME}
+
+    log "Creating mount point at /var/lib/clickhouse"
+    mkdir -p /var/lib/clickhouse
+
+    log "Mounting ${DEVICE_NAME} to /var/lib/clickhouse"
+    mount ${DEVICE_NAME} /var/lib/clickhouse
+
+    log "Adding to fstab"
+    echo "${DEVICE_NAME}  /var/lib/clickhouse  xfs  defaults  0  0" >> /etc/fstab
+
+    log "Setting permissions"
+    chown -R clickhouse:clickhouse /var/lib/clickhouse
+}
+
 setup_clickhouse_server() {
     log "Setting up ClickHouse server..."
 
-    # Mount EBS volume
-    mkfs.xfs /dev/xvdh
-    mkdir -p /var/lib/clickhouse
-    mount /dev/xvdh /var/lib/clickhouse
-    echo "/dev/xvdh  /var/lib/clickhouse  xfs  defaults  0  0" >> /etc/fstab
+    # Setup EBS volume
+    setup_ebs_volume
 
     # Install ClickHouse
     apt-get install -y clickhouse-server clickhouse-client
-    chown -R clickhouse:clickhouse /var/lib/clickhouse
 
     # Copy configurations
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
@@ -92,17 +129,16 @@ setup_clickhouse_server() {
 setup_clickhouse_keeper() {
     log "Setting up ClickHouse Keeper..."
 
-    # Mount EBS volume
-    mkfs.xfs /dev/xvdh
-    mkdir -p /data
-    mount /dev/xvdh /data
-    mkdir -p /data/zookeeper/{data,logs}
-    echo "/dev/xvdh  /data  xfs  defaults  0  0" >> /etc/fstab
+    # Setup EBS volume
+    setup_ebs_volume
+
+    # Create additional directories
+    mkdir -p /var/lib/clickhouse/coordination/logs
+    mkdir -p /var/lib/clickhouse/coordination/snapshots
+    chown -R clickhouse:clickhouse /var/lib/clickhouse
 
     # Install and configure Keeper
     apt-get install -y clickhouse-keeper
-    mkdir -p /var/lib/clickhouse-keeper
-    chown clickhouse:clickhouse /var/lib/clickhouse-keeper
 
     # Copy configurations
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
@@ -110,7 +146,7 @@ setup_clickhouse_keeper() {
 
     # Start service
     systemctl enable clickhouse-keeper
-    systemctl start clickhouse-keeper
+    systemctl start clickhouse-keeperr
 }
 
 start_cloudwatch_agent() {
