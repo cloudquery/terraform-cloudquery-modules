@@ -24,7 +24,7 @@ resource "aws_network_acl_rule" "private_ingress_ephemeral" {
   protocol       = "tcp"
   rule_action    = "allow"
   cidr_block     = "0.0.0.0/0"
-  from_port      = 1024
+  from_port      = 32768
   to_port        = 65535
 }
 
