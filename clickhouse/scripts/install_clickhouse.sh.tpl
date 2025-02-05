@@ -114,9 +114,12 @@ setup_clickhouse_server() {
     # Copy configurations
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/config.d/" "$${CLICKHOUSE_CONFIG_DIR}" --recursive
+    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/users.xml" "/etc/clickhouse-server/users.xml"  # Add this line
 
     # Copy certificates
     setup_certificates "server"
+
+    setup_client_config
 
     # Start service
     service clickhouse-server start
@@ -147,7 +150,28 @@ setup_clickhouse_keeper() {
     # Copy certificates
     setup_certificates "keeper"
 
-    # Start service
+    # Before starting the service
+    # Create required directories
+    mkdir -p /var/lib/clickhouse-keeper
+    mkdir -p /var/lib/clickhouse/coordination/log
+    mkdir -p /var/lib/clickhouse/coordination/snapshots
+    mkdir -p /var/log/clickhouse-keeper
+
+    # Set ownership
+    chown -R clickhouse:clickhouse /var/lib/clickhouse-keeper
+    chown -R clickhouse:clickhouse /var/lib/clickhouse/coordination
+    chown -R clickhouse:clickhouse /var/log/clickhouse-keeper
+
+    # Set permissions
+    chmod -R 750 /var/lib/clickhouse-keeper
+    chmod -R 750 /var/lib/clickhouse/coordination
+    chmod -R 750 /var/log/clickhouse-keeper
+
+    # Ensure configuration file has correct permissions
+    chown clickhouse:clickhouse /etc/clickhouse-keeper/keeper_config.xml
+    chmod 640 /etc/clickhouse-keeper/keeper_config.xml
+
+    # Then start service
     systemctl enable clickhouse-keeper
     systemctl start clickhouse-keeper
 }
@@ -192,7 +216,8 @@ setup_certificates() {
             -CAcreateserial \
             -out "$cert_base_dir/server.crt" \
             -days ${ssl_cert_days} \
-            -sha256
+            -sha256 \
+            -extfile <(printf "subjectAltName=DNS:${nlb_dns},DNS:${node_name}.${internal_domain}")
 
         # Clean up CSR
         rm "$cert_base_dir/server.csr"
@@ -200,6 +225,16 @@ setup_certificates() {
         # Set correct permissions
         chown clickhouse:clickhouse "$cert_base_dir"/*.{key,crt}
         chmod 600 "$cert_base_dir"/*.key
+    fi
+}
+
+setup_client_config() {
+    if [ "${enable_encryption}" = true ] && [ "${use_self_signed_cert}" = true ]; then
+        log "Setting up ClickHouse client configuration"
+        mkdir -p /etc/clickhouse-client
+        aws s3 cp "s3://${clickhouse_config_bucket}/client/config.xml" /etc/clickhouse-client/config.xml
+        chown -R clickhouse:clickhouse /etc/clickhouse-client
+        chmod 644 /etc/clickhouse-client/config.xml
     fi
 }
 

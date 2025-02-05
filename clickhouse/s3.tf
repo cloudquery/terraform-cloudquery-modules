@@ -161,8 +161,8 @@ resource "aws_s3_object" "cluster_users_configuration" {
   bucket   = aws_s3_bucket.configuration.bucket
   key      = "${each.value.name}/users.xml"
   content = templatefile("${path.module}/config/server/users.xml.tpl", {
-    default_password_hash = sha256(random_password.default_user.result)
-    admin_password_hash   = sha256(random_password.admin_user.result)
+    default_password_hash = sha256(base64encode(random_password.default_user.result))
+    admin_password_hash   = sha256(base64encode(random_password.admin_user.result))
     default_allowed_ips   = var.default_user_networks
     admin_allowed_ips     = var.admin_user_networks
   })
@@ -182,6 +182,21 @@ resource "aws_s3_object" "cluster_s3_configuration" {
   depends_on = [
     aws_s3_bucket.configuration,
     aws_s3_bucket_versioning.configuration
+  ]
+}
+
+resource "aws_s3_object" "client_configuration" {
+  count  = var.enable_encryption && var.use_self_signed_cert ? 1 : 0
+  bucket = aws_s3_bucket.configuration.bucket
+  key    = "client/config.xml"
+  content = templatefile("${path.module}/config/client/config.xml.tpl", {
+    ca_path = "/etc/clickhouse-server/ca.crt"
+  })
+
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+
   ]
 }
 

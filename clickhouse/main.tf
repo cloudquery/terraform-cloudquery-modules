@@ -42,6 +42,8 @@ module "clickhouse_cluster" {
     internal_domain          = local.internal_domain,
     ssl_key_bits             = var.ssl_key_bits,
     ssl_cert_days            = var.ssl_cert_days
+    nlb_dns                  = var.enable_nlb ? aws_lb.nlb[0].dns_name : ""
+    use_self_signed_cert     = var.use_self_signed_cert
   })
 
   metadata_options = {
@@ -82,6 +84,8 @@ module "clickhouse_keeper" {
     internal_domain          = local.internal_domain,
     ssl_key_bits             = var.ssl_key_bits,
     ssl_cert_days            = var.ssl_cert_days
+    nlb_dns                  = var.enable_nlb ? aws_lb.nlb[0].dns_name : ""
+    use_self_signed_cert     = var.use_self_signed_cert
   })
 
   metadata_options = {

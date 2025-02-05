@@ -20,6 +20,12 @@ resource "tls_self_signed_cert" "clickhouse" {
     "digital_signature",
     "server_auth",
   ]
+
+  dns_names = compact([
+    coalesce(var.cluster_domain, "clickhouse.internal"),
+    "*.clickhouse.internal",
+    var.enable_nlb ? aws_lb.nlb[0].dns_name : ""
+  ])
 }
 
 resource "aws_acm_certificate" "clickhouse" {
