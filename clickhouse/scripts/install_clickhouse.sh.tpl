@@ -19,6 +19,22 @@ handle_error() {
     exit 1
 }
 
+setup_ssm() {
+    log "Setting up SSM Agent..."
+    # Check if SSM agent is installed
+    if [ ! -f /snap/amazon-ssm-agent/current/amazon-ssm-agent ]; then
+        log "Installing SSM Agent..."
+        snap install amazon-ssm-agent --classic
+    fi
+
+    # Ensure SSM agent is running
+    systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
+    systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service
+
+    log "SSM Agent status:"
+    systemctl status snap.amazon-ssm-agent.amazon-ssm-agent.service || true
+}
+
 install_aws_cli() {
     log "Installing AWS CLI..."
     apt-get install -y unzip
@@ -128,6 +144,7 @@ trap 'handle_error $LINENO' ERR
 log "Starting system setup..."
 apt-get update
 
+setup_ssm
 install_aws_cli
 setup_clickhouse_repo
 install_cloudwatch_agent
