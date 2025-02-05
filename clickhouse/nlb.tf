@@ -38,9 +38,9 @@ resource "aws_lb_target_group" "clickhouse_nlb_target_group" {
 
   health_check {
     interval            = 30
-    port                = var.http_port
-    protocol            = "HTTP"
     path                = "/ping"
+    port                = var.enable_encryption ? var.https_port : var.http_port
+    protocol            = var.enable_encryption ? "HTTPS" : "HTTP"
     matcher             = "200-299"
     timeout             = 5
     healthy_threshold   = 2
