@@ -129,18 +129,20 @@ At this stage the data should be present on all nodes of the cluster given that 
 | [aws_security_group.clickhouse_cluster](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group) | resource |
 | [aws_security_group.clickhouse_keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group) | resource |
 | [aws_security_group.nlb](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group) | resource |
-| [aws_security_group_rule.clickhouse_egress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.clickhouse_healthcheck](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.clickhouse_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.clickhouse_nlb_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.cluster_allow_all_outbound](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.cluster_cluster_to_keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.keeper_allow_all_outbound](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.keeper_cluster_to_keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.keeper_egress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.nlb_clickhouse_egress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.nlb_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.nlb_secure_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.clickhouse_cluster_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.clickhouse_from_nlb](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.clickhouse_health_check](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.clickhouse_interserver](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.clickhouse_keeper_access](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.clickhouse_outbound](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.clickhouse_prometheus](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.cluster_ssh](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.keeper_cluster_access](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.keeper_outbound](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.keeper_raft](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.keeper_ssh](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.nlb_inbound](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.nlb_to_clickhouse](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group_rule) | resource |
 | [aws_volume_attachment.clickhouse](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/volume_attachment) | resource |
 | [aws_volume_attachment.keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/volume_attachment) | resource |
 | [random_password.admin_user](https://registry.terraform.io/providers/hashicorp/random/3.6.3/docs/resources/password) | resource |
@@ -179,11 +181,13 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="input_keeper_raft_port"></a> [keeper\_raft\_port](#input\_keeper\_raft\_port) | ClickHouse Keeper Raft port | `number` | `9234` | no |
 | <a name="input_keeper_volume_size"></a> [keeper\_volume\_size](#input\_keeper\_volume\_size) | The size of the EBS volume for the ClickHouse keepers in GB | `number` | `10` | no |
 | <a name="input_keeper_volume_type"></a> [keeper\_volume\_type](#input\_keeper\_volume\_type) | The type of EBS volume for the ClickHouse keepers | `string` | `"gp2"` | no |
+| <a name="input_key_name"></a> [key\_name](#input\_key\_name) | Name of an AWS key pair to use for SSH access (must exist in the AWS account) | `string` | `""` | no |
 | <a name="input_nlb_type"></a> [nlb\_type](#input\_nlb\_type) | Type of NLB to create - internal or external | `string` | `"internal"` | no |
 | <a name="input_prometheus_port"></a> [prometheus\_port](#input\_prometheus\_port) | Prometheus metrics port | `number` | `9363` | no |
 | <a name="input_region"></a> [region](#input\_region) | The AWS region to deploy to | `string` | `"us-west-2"` | no |
 | <a name="input_retention_period"></a> [retention\_period](#input\_retention\_period) | Log retention period in days | `number` | `30` | no |
 | <a name="input_shards"></a> [shards](#input\_shards) | List of shards and their configuration. Each shard specifies how many replicas it should have and optionally its weight. | <pre>list(object({<br/>    replica_count = number<br/>    weight        = optional(number, 1)<br/>  }))</pre> | n/a | yes |
+| <a name="input_ssh_access"></a> [ssh\_access](#input\_ssh\_access) | SSH access configuration. Set enabled=false to disable SSH access, or configure cidr\_blocks for access control. | <pre>object({<br/>    enabled = bool<br/>    # cidr_blocks can be null to use VPC CIDR, or a list of explicit CIDRs<br/>    cidr_blocks = list(string)<br/>    # if true, adds VPC CIDR to the provided cidr_blocks<br/>    include_vpc_cidr = bool<br/>  })</pre> | <pre>{<br/>  "cidr_blocks": [],<br/>  "enabled": false,<br/>  "include_vpc_cidr": true<br/>}</pre> | no |
 | <a name="input_ssl_cert_days"></a> [ssl\_cert\_days](#input\_ssl\_cert\_days) | Validity period for self-signed certificates in days | `number` | `365` | no |
 | <a name="input_ssl_key_bits"></a> [ssl\_key\_bits](#input\_ssl\_key\_bits) | Key size for self-signed certificates | `number` | `2048` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to all resources | `map(string)` | <pre>{<br/>  "Environment": "production",<br/>  "ManagedBy": "terraform"<br/>}</pre> | no |
