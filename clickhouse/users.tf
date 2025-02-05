@@ -10,7 +10,7 @@ resource "random_password" "admin_user" {
 
 # Store passwords in Secrets Manager for retrieval
 resource "aws_secretsmanager_secret" "clickhouse_credentials" {
-  name_prefix = "clickhouse-credentials-"
+  name_prefix = "${var.name_prefix}clickhouse-credentials-"
   description = "ClickHouse user credentials"
 }
 

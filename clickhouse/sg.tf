@@ -1,6 +1,6 @@
 resource "aws_security_group" "nlb" {
   count       = var.enable_nlb ? 1 : 0
-  name        = "clickhouse-nlb-sg"
+  name        = "${var.name_prefix}clickhouse-nlb-sg"
   description = "Security group for the ClickHouse NLB"
   vpc_id      = module.vpc.vpc_id
 }
@@ -29,7 +29,7 @@ resource "aws_security_group_rule" "nlb_clickhouse_egress" {
 }
 
 resource "aws_security_group" "clickhouse_cluster" {
-  name        = "clickhouse_cluster-sg"
+  name        = "${var.name_prefix}clickhouse_cluster-sg"
   description = "Security group for the ClickHouse cluster"
   vpc_id      = module.vpc.vpc_id
 }
@@ -87,7 +87,7 @@ resource "aws_security_group_rule" "clickhouse_egress" {
 }
 
 resource "aws_security_group" "clickhouse_keeper" {
-  name        = "clickhouse-keeper-sg"
+  name        = "${var.name_prefix}clickhouse-keeper-sg"
   description = "Security group for the ClickHouse keepers"
   vpc_id      = module.vpc.vpc_id
 }

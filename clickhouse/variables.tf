@@ -121,3 +121,13 @@ variable "tags" {
     Project = "ClickHouse Cluster"
   }
 }
+
+variable "name_prefix" {
+  type        = string
+  description = "Name prefix for various resources that will be created, used to avoid conflicts with other resources"
+  default     = ""
+  validation {
+    error_message = "name_prefix must be less than 10 characters and only contain alphanumeric characters and hyphens, and not start with a hyphen"
+    condition     = length(var.name_prefix) <= 10 && !startswith(var.name_prefix, "-") && can(regex("^[a-zA-Z0-9-]+$", var.name_prefix))
+  }
+}

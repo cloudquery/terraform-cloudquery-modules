@@ -31,7 +31,9 @@ module "clickhouse_sharded" {
   # Only allow connections from your network
   allowed_cidr_blocks = ["10.0.0.0/8"]
 
-  cluster_name = "clickhouse-sharded"
+  cluster_name = "clickhouse-multi-shard"
+
+  name_prefix = "example-"
 
   tags = {
     Environment = "production"
