@@ -27,7 +27,7 @@
                 <port>${keeper_raft_port}</port>
             </server>
             %{~ endfor ~}
-        </raft_configuration>>
+        </raft_configuration>
     </keeper_server>
 
     %{ if enable_encryption }
