@@ -2,31 +2,36 @@ name: "Terraform Module Validation"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
-      - '**/README.md'
-      - '**/**.tf'
-      - '**/**.tpl'
-      - '.github/workflows/**'
+      - "**/README.md"
+      - "**/**.tf"
+      - "**/**.tpl"
+      - ".github/workflows/**"
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
     paths:
-      - '**/README.md'
-      - '**/**.tf'
-      - '**/**.tpl'
-      - '.github/workflows/**'
+      - "**/README.md"
+      - "**/**.tf"
+      - "**/**.tpl"
+      - ".github/workflows/**"
 
 permissions:
   contents: write
   pull-requests: write
   security-events: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   discover:
-    name: "Discover Modules"
+    name: "Discover Modules and Examples"
     runs-on: ubuntu-latest
     outputs:
       modules: ${{ steps.set-modules.outputs.modules }}
+      examples: ${{ steps.set-examples.outputs.examples }}
     steps:
       - uses: actions/checkout@v4
 
@@ -36,8 +41,14 @@ jobs:
           MODULES=$(find . -type f -name "*.tf" -not -path "*/\.*" -not -path "*/examples/*" -exec dirname {} \; | sort -u | sed 's/^\.\///' | jq -R -s -c 'split("\n")[:-1]')
           echo "modules=$MODULES" >> $GITHUB_OUTPUT
 
-  validate:
-    name: "Validate"
+      - id: set-examples
+        run: |
+          # Find all directories containing examples/**/main.tf files
+          EXAMPLES=$(find . -type f -name "main.tf" -path "*/examples/*" -exec dirname {} \; | sort -u | sed 's/^\.\///' | jq -R -s -c 'split("\n")[:-1]')
+          echo "examples=$EXAMPLES" >> $GITHUB_OUTPUT
+
+  validate-modules:
+    name: "Validate Modules"
     needs: discover
     runs-on: ubuntu-latest
     strategy:
@@ -54,6 +65,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
+          token: ${{ secrets.GH_CQ_BOT }}
 
       - name: Configure Git for Pull Request
         if: github.event_name == 'pull_request'
@@ -104,12 +116,12 @@ jobs:
           output-file: README.md
           output-method: inject
           git-push: true
-          git-commit-message: "docs: update terraform docs [skip ci]"
+          git-commit-message: "docs: update terraform docs"
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
         with:
-          working-dir: ${{ matrix.module }}
+          working_directory: ${{ matrix.module }}
           soft_fail: true
 
       - name: Create KICS results directory
@@ -155,3 +167,29 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
+  validate-examples:
+    name: "Validate Examples"
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example: ${{ fromJson(needs.discover.outputs.examples) }}
+    defaults:
+      run:
+        working-directory: ${{ matrix.example }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
