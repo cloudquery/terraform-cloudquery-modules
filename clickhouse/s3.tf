@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "configuration" {
-  bucket_prefix = "clickhouse"
+  bucket_prefix = "${var.name_prefix}clickhouse"
   force_destroy = true
 }
 

@@ -23,7 +23,9 @@ module "clickhouse_ha" {
   # Only allow connections from your network
   allowed_cidr_blocks = ["10.0.0.0/8"]
 
-  cluster_name = "clickhouse-ha"
+  cluster_name = "clickhouse-single-shard"
+
+  name_prefix = "example-"
 
   tags = {
     Environment = "production"
