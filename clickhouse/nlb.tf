@@ -52,5 +52,5 @@ resource "aws_lb_target_group_attachment" "clickhouse_nlb_target_group_attachmen
   for_each         = var.enable_nlb ? module.clickhouse_cluster : {}
   target_group_arn = aws_lb_target_group.clickhouse_nlb_target_group[0].arn
   target_id        = module.clickhouse_cluster[each.key].id
-  port             = 9000
+  port             = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
 }

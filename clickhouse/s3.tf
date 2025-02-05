@@ -39,6 +39,11 @@ resource "aws_s3_object" "cluster_network_configuration" {
     interserver_http_port  = var.interserver_http_port
     interserver_https_port = var.interserver_https_port
   })
+
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+  ]
 }
 
 resource "random_password" "cluster_secret" {
@@ -58,6 +63,11 @@ resource "aws_s3_object" "cluster_remote_server_configuration" {
     tcp_port          = var.tcp_port
     tcp_port_secure   = var.tcp_port_secure
   })
+
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+  ]
 }
 
 resource "aws_s3_object" "cluster_use_keeper_configuration" {
@@ -70,6 +80,11 @@ resource "aws_s3_object" "cluster_use_keeper_configuration" {
     keeper_port        = var.keeper_port
     keeper_port_secure = var.keeper_port_secure
   })
+
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+  ]
 }
 
 resource "aws_s3_object" "cluster_macros" {
@@ -81,6 +96,11 @@ resource "aws_s3_object" "cluster_macros" {
     shard_index   = each.value.shard_index
     replica_index = each.value.replica_index
   })
+
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+  ]
 }
 
 resource "aws_s3_object" "cluster_cloudwatch_configuration" {
@@ -93,6 +113,11 @@ resource "aws_s3_object" "cluster_cloudwatch_configuration" {
     mount_path = "/var/lib/clickhouse"
     file_path  = "/var/log/clickhouse-server/clickhouse-server.log"
   })
+
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+  ]
 }
 
 resource "aws_s3_object" "keeper_configuration" {
@@ -107,6 +132,11 @@ resource "aws_s3_object" "keeper_configuration" {
     keeper_port_secure = var.keeper_port_secure
     keeper_raft_port   = var.keeper_raft_port
   })
+
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+  ]
 }
 
 resource "aws_s3_object" "keeper_cloudwatch_configuration" {
@@ -119,6 +149,11 @@ resource "aws_s3_object" "keeper_cloudwatch_configuration" {
     mount_path = "/data"
     file_path  = "/var/log/clickhouse-keeper/clickhouse-keeper.log"
   })
+
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+  ]
 }
 
 resource "aws_s3_object" "cluster_users_configuration" {
@@ -131,6 +166,11 @@ resource "aws_s3_object" "cluster_users_configuration" {
     default_allowed_ips   = var.default_user_networks
     admin_allowed_ips     = var.admin_user_networks
   })
+
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+  ]
 }
 
 resource "aws_s3_object" "cluster_s3_configuration" {
@@ -139,7 +179,10 @@ resource "aws_s3_object" "cluster_s3_configuration" {
   key      = "${each.value.name}/config.d/s3.xml"
   content  = file("${path.module}/config/server/s3.xml.tpl")
 
-  depends_on = [aws_s3_bucket.configuration]
+  depends_on = [
+    aws_s3_bucket.configuration,
+    aws_s3_bucket_versioning.configuration
+  ]
 }
 
 resource "aws_s3_bucket_public_access_block" "configuration" {
