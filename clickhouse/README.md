@@ -103,6 +103,7 @@ At this stage the data should be present on all nodes of the cluster given that 
 | [aws_network_acl.private](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/network_acl) | resource |
 | [aws_network_acl_rule.private_egress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/network_acl_rule) | resource |
 | [aws_network_acl_rule.private_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/network_acl_rule) | resource |
+| [aws_network_acl_rule.private_ingress_ephemeral](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/network_acl_rule) | resource |
 | [aws_route53_record.clickhouse_cluster](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/route53_record) | resource |
 | [aws_route53_record.clickhouse_keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/route53_record) | resource |
 | [aws_route53_zone.private](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/route53_zone) | resource |
