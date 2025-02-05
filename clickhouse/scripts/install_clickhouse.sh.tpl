@@ -173,15 +173,33 @@ setup_certificates() {
             exit 1
         fi
 
-        openssl req -x509 -newkey rsa:${ssl_key_bits} \
-            -nodes -days ${ssl_cert_days} \
-            -keyout "$cert_base_dir/server.key" \
-            -out "$cert_base_dir/server.crt" \
+        # Generate CA key and certificate
+        openssl genrsa -out "$cert_base_dir/ca.key" 2048
+        openssl req -x509 -new -nodes -key "$cert_base_dir/ca.key" \
+            -sha256 -days ${ssl_cert_days} \
+            -out "$cert_base_dir/ca.crt" \
+            -subj "/CN=${internal_domain} CA"
+
+        # Generate server/keeper key and certificate
+        openssl genrsa -out "$cert_base_dir/server.key" ${ssl_key_bits}
+        openssl req -new -key "$cert_base_dir/server.key" \
+            -out "$cert_base_dir/server.csr" \
             -subj "/CN=${node_name}.${internal_domain}"
 
-        chown clickhouse:clickhouse "$cert_base_dir/server.key"
-        chown clickhouse:clickhouse "$cert_base_dir/server.crt"
-        chmod 600 "$cert_base_dir/server.key"
+        openssl x509 -req -in "$cert_base_dir/server.csr" \
+            -CA "$cert_base_dir/ca.crt" \
+            -CAkey "$cert_base_dir/ca.key" \
+            -CAcreateserial \
+            -out "$cert_base_dir/server.crt" \
+            -days ${ssl_cert_days} \
+            -sha256
+
+        # Clean up CSR
+        rm "$cert_base_dir/server.csr"
+
+        # Set correct permissions
+        chown clickhouse:clickhouse "$cert_base_dir"/*.{key,crt}
+        chmod 600 "$cert_base_dir"/*.key
     fi
 }
 
