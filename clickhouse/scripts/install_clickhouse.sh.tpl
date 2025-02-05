@@ -21,18 +21,12 @@ handle_error() {
 
 setup_ssm() {
     log "Setting up SSM Agent..."
-    # Check if SSM agent is installed
     if [ ! -f /snap/amazon-ssm-agent/current/amazon-ssm-agent ]; then
         log "Installing SSM Agent..."
         snap install amazon-ssm-agent --classic
     fi
-
-    # Ensure SSM agent is running
     systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
     systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service
-
-    log "SSM Agent status:"
-    systemctl status snap.amazon-ssm-agent.amazon-ssm-agent.service || true
 }
 
 install_aws_cli() {
@@ -48,11 +42,9 @@ setup_clickhouse_repo() {
     log "Setting up ClickHouse repository..."
     apt-get install -y apt-transport-https ca-certificates curl gnupg
 
-    # Import GPG key
     curl -fsSL 'https://packages.clickhouse.com/rpm/lts/repodata/repomd.xml.key' | \
         gpg --dearmor -o /usr/share/keyrings/clickhouse-keyring.gpg
 
-    # Add repository
     ARCH=$(dpkg --print-architecture)
     echo "deb [signed-by=/usr/share/keyrings/clickhouse-keyring.gpg arch=$${ARCH}] \
         https://packages.clickhouse.com/deb stable main" | \
@@ -74,7 +66,7 @@ setup_ebs_volume() {
     # Wait for device to be available
     sleep 10
 
-    # Find the actual device name - could be xvdh or nvme
+    # Find the actual device name
     DEVICE_NAME=""
     if [ -e "/dev/xvdh" ]; then
         DEVICE_NAME="/dev/xvdh"
@@ -83,7 +75,6 @@ setup_ebs_volume() {
         DEVICE_NAME="/dev/nvme1n1"
         log "Found NVMe device naming: $${DEVICE_NAME}"
     else
-        # List available devices for debugging
         log "Available devices:"
         lsblk
         ls -la /dev/nvme* || true
@@ -104,19 +95,21 @@ setup_ebs_volume() {
 
     log "Adding to fstab"
     echo "$${DEVICE_NAME}  /var/lib/clickhouse  xfs  defaults  0  0" >> /etc/fstab
-
-    log "Setting permissions"
-    chown -R clickhouse:clickhouse /var/lib/clickhouse
 }
 
 setup_clickhouse_server() {
     log "Setting up ClickHouse server..."
 
+    # First install ClickHouse (this creates the user/group)
+    log "Installing ClickHouse server and client"
+    apt-get install -y clickhouse-server clickhouse-client
+
     # Setup EBS volume
     setup_ebs_volume
 
-    # Install ClickHouse
-    apt-get install -y clickhouse-server clickhouse-client
+    # Now set permissions (after clickhouse user exists)
+    log "Setting permissions"
+    chown -R clickhouse:clickhouse /var/lib/clickhouse
 
     # Copy configurations
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
@@ -129,16 +122,20 @@ setup_clickhouse_server() {
 setup_clickhouse_keeper() {
     log "Setting up ClickHouse Keeper..."
 
+    # First install Keeper (this creates the user/group)
+    log "Installing ClickHouse Keeper"
+    apt-get install -y clickhouse-keeper
+
     # Setup EBS volume
     setup_ebs_volume
 
     # Create additional directories
     mkdir -p /var/lib/clickhouse/coordination/logs
     mkdir -p /var/lib/clickhouse/coordination/snapshots
-    chown -R clickhouse:clickhouse /var/lib/clickhouse
 
-    # Install and configure Keeper
-    apt-get install -y clickhouse-keeper
+    # Now set permissions (after clickhouse user exists)
+    log "Setting permissions"
+    chown -R clickhouse:clickhouse /var/lib/clickhouse
 
     # Copy configurations
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
@@ -146,7 +143,7 @@ setup_clickhouse_keeper() {
 
     # Start service
     systemctl enable clickhouse-keeper
-    systemctl start clickhouse-keeperr
+    systemctl start clickhouse-keeper
 }
 
 start_cloudwatch_agent() {
@@ -160,14 +157,12 @@ start_cloudwatch_agent() {
 
 setup_certificates() {
     if [ "${enable_encryption}" = true ]; then
-        # Generate self-signed certificate for node-to-node communication
         openssl req -x509 -newkey rsa:${ssl_key_bits} \
             -nodes -days ${ssl_cert_days} \
             -keyout /etc/clickhouse-server/server.key \
             -out /etc/clickhouse-server/server.crt \
             -subj "/CN=${node_name}.${internal_domain}"
 
-        # Set correct permissions
         chown clickhouse:clickhouse /etc/clickhouse-server/server.key
         chown clickhouse:clickhouse /etc/clickhouse-server/server.crt
         chmod 600 /etc/clickhouse-server/server.key

@@ -11,6 +11,12 @@
 
     <listen_host>0.0.0.0</listen_host>
 
+    # HTTP configuration removal when encryption is enabled
+    %{ if enable_encryption }
+    <http_port remove="remove"/>
+    <interserver_http_port remove="remove"/>
+    %{ endif }
+
     # Secure ports configuration
     %{ if enable_encryption }
     <https_port>${https_port}</https_port>
