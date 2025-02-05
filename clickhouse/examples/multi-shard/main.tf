@@ -2,7 +2,7 @@ provider "aws" {
   region = "us-west-2"
 }
 
-module "clickhouse_sharded" {
+module "clickhouse_multi_shard" {
   source = "../../"
 
   # 3 shards with 2 replicas each for scalability and HA

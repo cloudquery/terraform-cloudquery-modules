@@ -2,7 +2,7 @@ provider "aws" {
   region = "us-west-2"
 }
 
-module "clickhouse_ha" {
+module "clickhouse_single_shard" {
   source = "../.."
 
   # Single shard with 3 replicas for high availability
