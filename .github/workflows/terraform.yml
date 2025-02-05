@@ -21,6 +21,10 @@ permissions:
   pull-requests: write
   security-events: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   discover:
     name: "Discover Modules and Examples"
@@ -61,6 +65,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
+          token: ${{ secrets.GH_CQ_BOT }}
 
       - name: Configure Git for Pull Request
         if: github.event_name == 'pull_request'
@@ -111,7 +116,7 @@ jobs:
           output-file: README.md
           output-method: inject
           git-push: true
-          git-commit-message: "docs: update terraform docs [skip ci]"
+          git-commit-message: "docs: update terraform docs"
 
       - name: Run tfsec
         uses: aquasecurity/tfsec-action@v1.0.0
