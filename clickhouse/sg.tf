@@ -52,6 +52,31 @@ resource "aws_security_group" "clickhouse_cluster" {
     self        = true
   }
 
+  # HTTP/HTTPS ingress
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [1] : []
+    content {
+      description     = "HTTPS health checks"
+      from_port       = var.https_port
+      to_port         = var.https_port
+      protocol        = "tcp"
+      security_groups = var.enable_nlb ? [aws_security_group.nlb[0].id] : []
+      self            = true
+    }
+  }
+
+  dynamic "ingress" {
+    for_each = var.enable_encryption ? [] : [1]
+    content {
+      description     = "HTTP health checks"
+      from_port       = var.http_port
+      to_port         = var.http_port
+      protocol        = "tcp"
+      security_groups = var.enable_nlb ? [aws_security_group.nlb[0].id] : []
+      self            = true
+    }
+  }
+
   # Dynamic block for encrypted traffic
   dynamic "ingress" {
     for_each = var.enable_encryption ? [1] : []
