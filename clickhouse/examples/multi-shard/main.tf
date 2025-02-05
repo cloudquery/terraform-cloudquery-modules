@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 module "clickhouse_sharded" {
-  source = "../../clickhouse"
+  source = "../../"
 
   # 3 shards with 2 replicas each for scalability and HA
   shards = [

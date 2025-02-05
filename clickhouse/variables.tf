@@ -113,3 +113,11 @@ variable "shards" {
     error_message = "Each shard must have at least one replica"
   }
 }
+
+variable "tags" {
+  type        = map(string)
+  description = "Tags to apply to the ClickHouse cluster"
+  default = {
+    Project = "ClickHouse Cluster"
+  }
+}
