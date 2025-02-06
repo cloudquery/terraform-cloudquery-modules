@@ -139,7 +139,7 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="input_clickhouse_instance_type"></a> [clickhouse\_instance\_type](#input\_clickhouse\_instance\_type) | The instance type for the ClickHouse servers | `string` | `"t2.medium"` | no |
 | <a name="input_clickhouse_volume_size"></a> [clickhouse\_volume\_size](#input\_clickhouse\_volume\_size) | The size of the EBS volume for the ClickHouse servers | `number` | `10` | no |
 | <a name="input_clickhouse_volume_type"></a> [clickhouse\_volume\_type](#input\_clickhouse\_volume\_type) | The type of EBS volume for the ClickHouse servers | `string` | `"gp2"` | no |
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the ClickHouse cluster | `string` | `"clickhouse_cluster"` | no |
+| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the ClickHouse cluster | `string` | `"clickhouse"` | no |
 | <a name="input_cluster_node_count"></a> [cluster\_node\_count](#input\_cluster\_node\_count) | The number of ClickHouse servers to deploy | `number` | `3` | no |
 | <a name="input_default_user_networks"></a> [default\_user\_networks](#input\_default\_user\_networks) | List of networks allowed to connect as default user | `list(string)` | <pre>[<br/>  "::/0"<br/>]</pre> | no |
 | <a name="input_enable_nlb"></a> [enable\_nlb](#input\_enable\_nlb) | Enable the Network Load Balancer for the ClickHouse cluster | `bool` | `true` | no |
@@ -147,7 +147,6 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="input_keeper_node_count"></a> [keeper\_node\_count](#input\_keeper\_node\_count) | The number of ClickHouse keepers to deploy | `number` | `3` | no |
 | <a name="input_keeper_volume_size"></a> [keeper\_volume\_size](#input\_keeper\_volume\_size) | The size of the EBS volume for the ClickHouse keepers | `number` | `10` | no |
 | <a name="input_keeper_volume_type"></a> [keeper\_volume\_type](#input\_keeper\_volume\_type) | The type of EBS volume for the ClickHouse keepers | `string` | `"gp2"` | no |
-| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Name prefix for various resources that will be created, used to avoid conflicts with other resources | `string` | `""` | no |
 | <a name="input_region"></a> [region](#input\_region) | The AWS region to deploy to | `string` | `"us-west-2"` | no |
 | <a name="input_shards"></a> [shards](#input\_shards) | List of shards and their configuration. Each shard specifies how many replicas it should have and optionally its weight. | <pre>list(object({<br/>    replica_count = number<br/>    weight        = optional(number, 1)<br/>  }))</pre> | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to the ClickHouse cluster | `map(string)` | <pre>{<br/>  "Project": "ClickHouse Cluster"<br/>}</pre> | no |

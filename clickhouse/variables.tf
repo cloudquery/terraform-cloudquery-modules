@@ -13,7 +13,11 @@ variable "region" {
 variable "cluster_name" {
   type        = string
   description = "The name of the ClickHouse cluster"
-  default     = "clickhouse_cluster"
+  default     = "clickhouse"
+  validation {
+    error_message = "cluster_name must be less than 30 characters and only contain alphanumeric characters and hyphens, and not start with a hyphen"
+    condition     = length(var.cluster_name) <= 30 && !startswith(var.cluster_name, "-") && can(regex("^[a-zA-Z0-9-]+$", var.cluster_name))
+  }
 }
 
 variable "cluster_node_count" {
@@ -119,15 +123,5 @@ variable "tags" {
   description = "Tags to apply to the ClickHouse cluster"
   default = {
     Project = "ClickHouse Cluster"
-  }
-}
-
-variable "name_prefix" {
-  type        = string
-  description = "Name prefix for various resources that will be created, used to avoid conflicts with other resources"
-  default     = ""
-  validation {
-    error_message = "name_prefix must be less than 10 characters and only contain alphanumeric characters and hyphens, and not start with a hyphen"
-    condition     = length(var.name_prefix) <= 10 && !startswith(var.name_prefix, "-") && can(regex("^[a-zA-Z0-9-]+$", var.name_prefix))
   }
 }
