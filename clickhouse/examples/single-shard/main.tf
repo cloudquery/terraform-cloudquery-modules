@@ -25,8 +25,6 @@ module "clickhouse_single_shard" {
 
   cluster_name = "clickhouse-single-shard"
 
-  name_prefix = "example-"
-
   tags = {
     Environment = "production"
     Project     = "analytics"

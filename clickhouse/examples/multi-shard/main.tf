@@ -33,8 +33,6 @@ module "clickhouse_multi_shard" {
 
   cluster_name = "clickhouse-multi-shard"
 
-  name_prefix = "example-"
-
   tags = {
     Environment = "production"
     Project     = "analytics"

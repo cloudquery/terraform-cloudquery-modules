@@ -1,6 +1,6 @@
 resource "aws_lb" "nlb" {
   count              = var.enable_nlb ? 1 : 0
-  name               = "${var.name_prefix}clickhouse-nlb"
+  name               = "${var.cluster_name}-nlb"
   internal           = false
   load_balancer_type = "network"
   security_groups    = [aws_security_group.nlb[0].id]
@@ -23,7 +23,7 @@ resource "aws_lb_listener" "clickhouse_nlb_listener" {
 
 resource "aws_lb_target_group" "clickhouse_nlb_target_group" {
   count       = var.enable_nlb ? 1 : 0
-  name        = "${var.name_prefix}clickhouse-nlb-tg"
+  name        = "${var.cluster_name}-nlb-tg"
   port        = 9000
   protocol    = "TCP"
   target_type = "instance"
