@@ -77,22 +77,20 @@ At this stage the data should be present on all nodes of the cluster given that 
 
 | Name | Type |
 |------|------|
-| [aws_acm_certificate.clickhouse](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/acm_certificate) | resource |
+| [aws_acm_certificate.nlb](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/acm_certificate) | resource |
 | [aws_cloudwatch_log_group.clickhouse](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/cloudwatch_log_group) | resource |
 | [aws_cloudwatch_log_group.keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/cloudwatch_log_group) | resource |
-| [aws_cloudwatch_log_group.vpc_flow_log](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/cloudwatch_log_group) | resource |
 | [aws_ebs_volume.clickhouse](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/ebs_volume) | resource |
 | [aws_ebs_volume.keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/ebs_volume) | resource |
-| [aws_flow_log.vpc](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/flow_log) | resource |
 | [aws_iam_instance_profile.clickhouse_cluster_profile](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_instance_profile.clickhouse_keeper_profile](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_policy.s3_policy](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.secrets_access](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_policy) | resource |
 | [aws_iam_policy_attachment.s3_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_policy_attachment) | resource |
 | [aws_iam_role.clickhouse_role](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_role) | resource |
-| [aws_iam_role.vpc_flow_log](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_role) | resource |
-| [aws_iam_role_policy.vpc_flow_log](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.cw_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.kms_policy](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.secrets_policy](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.ssm_policy](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_kms_alias.cloudwatch](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/kms_alias) | resource |
 | [aws_kms_key.cloudwatch](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/kms_key) | resource |
@@ -100,10 +98,6 @@ At this stage the data should be present on all nodes of the cluster given that 
 | [aws_lb_listener.clickhouse_nlb_listener](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/lb_listener) | resource |
 | [aws_lb_target_group.clickhouse_nlb_target_group](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/lb_target_group) | resource |
 | [aws_lb_target_group_attachment.clickhouse_nlb_target_group_attachment](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/lb_target_group_attachment) | resource |
-| [aws_network_acl.private](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/network_acl) | resource |
-| [aws_network_acl_rule.private_egress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/network_acl_rule) | resource |
-| [aws_network_acl_rule.private_ingress](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/network_acl_rule) | resource |
-| [aws_network_acl_rule.private_ingress_ephemeral](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/network_acl_rule) | resource |
 | [aws_route53_record.clickhouse_cluster](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/route53_record) | resource |
 | [aws_route53_record.clickhouse_keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/route53_record) | resource |
 | [aws_route53_zone.private](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/route53_zone) | resource |
@@ -125,8 +119,12 @@ At this stage the data should be present on all nodes of the cluster given that 
 | [aws_s3_object.cluster_users_configuration](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/s3_object) | resource |
 | [aws_s3_object.keeper_cloudwatch_configuration](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/s3_object) | resource |
 | [aws_s3_object.keeper_configuration](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/s3_object) | resource |
+| [aws_secretsmanager_secret.ca_materials](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/secretsmanager_secret) | resource |
 | [aws_secretsmanager_secret.clickhouse_credentials](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/secretsmanager_secret) | resource |
+| [aws_secretsmanager_secret.node_certs](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/secretsmanager_secret) | resource |
+| [aws_secretsmanager_secret_version.ca_materials](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/secretsmanager_secret_version) | resource |
 | [aws_secretsmanager_secret_version.clickhouse_credentials](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/secretsmanager_secret_version) | resource |
+| [aws_secretsmanager_secret_version.node_certs](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/secretsmanager_secret_version) | resource |
 | [aws_security_group.clickhouse_cluster](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group) | resource |
 | [aws_security_group.clickhouse_keeper](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group) | resource |
 | [aws_security_group.nlb](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/resources/security_group) | resource |
@@ -149,8 +147,17 @@ At this stage the data should be present on all nodes of the cluster given that 
 | [random_password.admin_user](https://registry.terraform.io/providers/hashicorp/random/3.6.3/docs/resources/password) | resource |
 | [random_password.cluster_secret](https://registry.terraform.io/providers/hashicorp/random/3.6.3/docs/resources/password) | resource |
 | [random_password.default_user](https://registry.terraform.io/providers/hashicorp/random/3.6.3/docs/resources/password) | resource |
-| [tls_private_key.clickhouse](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
-| [tls_self_signed_cert.clickhouse](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/self_signed_cert) | resource |
+| [tls_cert_request.cluster](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/cert_request) | resource |
+| [tls_cert_request.keeper](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/cert_request) | resource |
+| [tls_cert_request.nlb](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/cert_request) | resource |
+| [tls_locally_signed_cert.cluster](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/locally_signed_cert) | resource |
+| [tls_locally_signed_cert.keeper](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/locally_signed_cert) | resource |
+| [tls_locally_signed_cert.nlb](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/locally_signed_cert) | resource |
+| [tls_private_key.ca](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
+| [tls_private_key.cluster](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
+| [tls_private_key.keeper](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
+| [tls_private_key.nlb](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
+| [tls_self_signed_cert.ca](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/self_signed_cert) | resource |
 | [aws_ami.ubuntu](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/data-sources/ami) | data source |
 | [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/data-sources/availability_zones) | data source |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.82.2/docs/data-sources/caller_identity) | data source |
@@ -166,11 +173,14 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="input_clickhouse_volume_size"></a> [clickhouse\_volume\_size](#input\_clickhouse\_volume\_size) | The size of the EBS volume for the ClickHouse servers in GB | `number` | `10` | no |
 | <a name="input_clickhouse_volume_type"></a> [clickhouse\_volume\_type](#input\_clickhouse\_volume\_type) | The type of EBS volume for the ClickHouse servers | `string` | `"gp2"` | no |
 | <a name="input_cluster_domain"></a> [cluster\_domain](#input\_cluster\_domain) | Domain name for the cluster (used for certificates) | `string` | `""` | no |
-| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the ClickHouse cluster | `string` | `"clickhouse_cluster"` | no |
+| <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the ClickHouse cluster | `string` | `"clickhouse"` | no |
 | <a name="input_cluster_node_count"></a> [cluster\_node\_count](#input\_cluster\_node\_count) | The number of ClickHouse servers to deploy | `number` | `3` | no |
 | <a name="input_default_user_networks"></a> [default\_user\_networks](#input\_default\_user\_networks) | List of networks allowed to connect as default user | `list(string)` | <pre>[<br/>  "::/0"<br/>]</pre> | no |
 | <a name="input_enable_encryption"></a> [enable\_encryption](#input\_enable\_encryption) | Enable TLS encryption for all ClickHouse communication | `bool` | `false` | no |
 | <a name="input_enable_nlb"></a> [enable\_nlb](#input\_enable\_nlb) | Enable the Network Load Balancer for the ClickHouse cluster | `bool` | `true` | no |
+| <a name="input_enable_nlb_tls"></a> [enable\_nlb\_tls](#input\_enable\_nlb\_tls) | Enable TLS termination at the NLB. Requires either an existing certificate ARN or cluster encryption to be enabled | `bool` | `false` | no |
+| <a name="input_external_ca_cert"></a> [external\_ca\_cert](#input\_external\_ca\_cert) | PEM-encoded CA certificate for cluster communication. Required if use\_external\_certs is true | `string` | `""` | no |
+| <a name="input_external_cert_secret_ids"></a> [external\_cert\_secret\_ids](#input\_external\_cert\_secret\_ids) | Map of Secret Manager ARNs containing certificates and private keys for each node. Required if use\_external\_certs is true | <pre>object({<br/>    cluster_nodes = map(string) # Map of node name to Secrets Manager ARN containing certificate and private key<br/>    keeper_nodes  = map(string)<br/>  })</pre> | `null` | no |
 | <a name="input_http_port"></a> [http\_port](#input\_http\_port) | HTTP default port | `number` | `8123` | no |
 | <a name="input_https_port"></a> [https\_port](#input\_https\_port) | HTTPS default port | `number` | `8443` | no |
 | <a name="input_interserver_http_port"></a> [interserver\_http\_port](#input\_interserver\_http\_port) | Inter-server communication port | `number` | `9009` | no |
@@ -194,13 +204,15 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags to apply to all resources | `map(string)` | <pre>{<br/>  "Environment": "production",<br/>  "ManagedBy": "terraform"<br/>}</pre> | no |
 | <a name="input_tcp_port"></a> [tcp\_port](#input\_tcp\_port) | Native Protocol port for client-server communication | `number` | `9000` | no |
 | <a name="input_tcp_port_secure"></a> [tcp\_port\_secure](#input\_tcp\_port\_secure) | Native protocol SSL/TLS port | `number` | `9440` | no |
-| <a name="input_tls_certificate_arn"></a> [tls\_certificate\_arn](#input\_tls\_certificate\_arn) | ARN of ACM certificate to use for TLS. Required when enable\_encryption is true and use\_self\_signed\_cert is false | `string` | `""` | no |
-| <a name="input_use_self_signed_cert"></a> [use\_self\_signed\_cert](#input\_use\_self\_signed\_cert) | Use self-signed certificate for NLB TLS. If false, tls\_certificate\_arn must be provided when enable\_encryption is true | `bool` | `false` | no |
+| <a name="input_tls_certificate_arn"></a> [tls\_certificate\_arn](#input\_tls\_certificate\_arn) | ARN of an existing ACM certificate to use for NLB TLS termination. Required if enable\_nlb\_tls is true and using an existing certificate | `string` | `""` | no |
+| <a name="input_use_external_certs"></a> [use\_external\_certs](#input\_use\_external\_certs) | Use externally provided certificates instead of generating them | `bool` | `false` | no |
+| <a name="input_use_generated_cert"></a> [use\_generated\_cert](#input\_use\_generated\_cert) | Use the cluster's generated CA to create a certificate for the NLB. Requires enable\_encryption to be true | `bool` | `false` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| <a name="output_ca_secret_arn"></a> [ca\_secret\_arn](#output\_ca\_secret\_arn) | Output the Secret ARN for use in user\_data |
 | <a name="output_clickhouse_cluster_ips"></a> [clickhouse\_cluster\_ips](#output\_clickhouse\_cluster\_ips) | Output the public and private IP addresses of the ClickHouse cluster |
 | <a name="output_clickhouse_keeper_ips"></a> [clickhouse\_keeper\_ips](#output\_clickhouse\_keeper\_ips) | Output the public and private IP addresses of the ClickHouse keepers |
 | <a name="output_clickhouse_nlb_dns"></a> [clickhouse\_nlb\_dns](#output\_clickhouse\_nlb\_dns) | Output the DNS name of the NLB |
