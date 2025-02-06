@@ -32,7 +32,7 @@ resource "aws_lb_target_group" "clickhouse_nlb_target_group" {
   count       = var.enable_nlb ? 1 : 0
   name        = "${var.cluster_name}-nlb-tg"
   port        = var.enable_nlb_tls ? var.tcp_port_secure : var.tcp_port
-  protocol    = "TCP"
+  protocol    = var.enable_encryption ? "TLS" : "TCP"
   target_type = "instance"
   vpc_id      = module.vpc.vpc_id
 
