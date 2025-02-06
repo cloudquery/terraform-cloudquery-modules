@@ -185,21 +185,6 @@ resource "aws_s3_object" "cluster_s3_configuration" {
   ]
 }
 
-resource "aws_s3_object" "client_configuration" {
-  count  = var.enable_encryption && var.use_self_signed_cert ? 1 : 0
-  bucket = aws_s3_bucket.configuration.bucket
-  key    = "client/config.xml"
-  content = templatefile("${path.module}/config/client/config.xml.tpl", {
-    ca_path = "/etc/clickhouse-server/ca.crt"
-  })
-
-  depends_on = [
-    aws_s3_bucket.configuration,
-    aws_s3_bucket_versioning.configuration
-
-  ]
-}
-
 resource "aws_s3_bucket_public_access_block" "configuration" {
   bucket = aws_s3_bucket.configuration.id
 

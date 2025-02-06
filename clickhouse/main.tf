@@ -43,7 +43,8 @@ module "clickhouse_cluster" {
     ssl_key_bits             = var.ssl_key_bits,
     ssl_cert_days            = var.ssl_cert_days
     nlb_dns                  = var.enable_nlb ? aws_lb.nlb[0].dns_name : ""
-    use_self_signed_cert     = var.use_self_signed_cert
+    ca_secret_arn            = var.enable_encryption ? aws_secretsmanager_secret.ca_materials[0].arn : "",
+    node_secret_arn          = var.enable_encryption ? aws_secretsmanager_secret.node_certs[each.key].arn : ""
   })
 
   metadata_options = {
@@ -85,7 +86,8 @@ module "clickhouse_keeper" {
     ssl_key_bits             = var.ssl_key_bits,
     ssl_cert_days            = var.ssl_cert_days
     nlb_dns                  = var.enable_nlb ? aws_lb.nlb[0].dns_name : ""
-    use_self_signed_cert     = var.use_self_signed_cert
+    ca_secret_arn            = var.enable_encryption ? aws_secretsmanager_secret.ca_materials[0].arn : "",
+    node_secret_arn          = var.enable_encryption ? aws_secretsmanager_secret.node_certs[each.key].arn : ""
   })
 
   metadata_options = {

@@ -15,12 +15,9 @@ resource "aws_lb_listener" "clickhouse_nlb_listener" {
   port              = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
   protocol          = var.enable_encryption ? "TLS" : "TCP"
 
-  # Use self-signed cert if specified, otherwise use provided cert ARN
-  certificate_arn = var.enable_encryption ? (
-    var.use_self_signed_cert ? aws_acm_certificate.clickhouse[0].arn : var.tls_certificate_arn
-  ) : null
-
-  ssl_policy = var.enable_encryption ? "ELBSecurityPolicy-TLS13-1-2-2021-06" : null
+  # Use CA-signed cert from ACM when encryption is enabled
+  certificate_arn = var.enable_encryption ? aws_acm_certificate.nlb[0].arn : null
+  ssl_policy      = var.enable_encryption ? "ELBSecurityPolicy-TLS13-1-2-2021-06" : null
 
   default_action {
     type             = "forward"

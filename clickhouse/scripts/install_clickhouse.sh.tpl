@@ -197,44 +197,71 @@ setup_certificates() {
             exit 1
         fi
 
-        # Generate CA key and certificate
-        openssl genrsa -out "$cert_base_dir/ca.key" 2048
-        openssl req -x509 -new -nodes -key "$cert_base_dir/ca.key" \
-            -sha256 -days ${ssl_cert_days} \
-            -out "$cert_base_dir/ca.crt" \
-            -subj "/CN=${internal_domain} CA"
+        # Create certificate directory if it doesn't exist
+        mkdir -p "$cert_base_dir"
 
-        # Generate server/keeper key and certificate
-        openssl genrsa -out "$cert_base_dir/server.key" ${ssl_key_bits}
-        openssl req -new -key "$cert_base_dir/server.key" \
-            -out "$cert_base_dir/server.csr" \
-            -subj "/CN=${node_name}.${internal_domain}"
+        # Fetch CA certificate from Secrets Manager
+        log "Fetching CA materials from Secrets Manager"
+        ca_materials=$(aws secretsmanager get-secret-value \
+            --secret-id "${ca_secret_arn}" \
+            --query SecretString \
+            --output text)
 
-        openssl x509 -req -in "$cert_base_dir/server.csr" \
-            -CA "$cert_base_dir/ca.crt" \
-            -CAkey "$cert_base_dir/ca.key" \
-            -CAcreateserial \
-            -out "$cert_base_dir/server.crt" \
-            -days ${ssl_cert_days} \
-            -sha256 \
-            -extfile <(printf "subjectAltName=DNS:${nlb_dns},DNS:${node_name}.${internal_domain}")
+        # Extract and save CA certificate
+        echo "$ca_materials" | jq -r '.ca_certificate' > "$cert_base_dir/ca.crt"
 
-        # Clean up CSR
-        rm "$cert_base_dir/server.csr"
+        # Fetch node-specific certificate and key
+        log "Fetching node certificate materials from Secrets Manager"
+        node_materials=$(aws secretsmanager get-secret-value \
+            --secret-id "${node_secret_arn}" \
+            --query SecretString \
+            --output text)
+
+        # Extract and save node certificate and private key
+        echo "$node_materials" | jq -r '.certificate' > "$cert_base_dir/server.crt"
+        echo "$node_materials" | jq -r '.private_key' > "$cert_base_dir/server.key"
 
         # Set correct permissions
-        chown clickhouse:clickhouse "$cert_base_dir"/*.{key,crt}
-        chmod 600 "$cert_base_dir"/*.key
+        chown -R clickhouse:clickhouse "$cert_base_dir"
+        chmod 600 "$cert_base_dir/server.key"
+        chmod 644 "$cert_base_dir/server.crt" "$cert_base_dir/ca.crt"
+
+        log "Certificate setup completed for $cert_base_dir"
     fi
 }
 
 setup_client_config() {
-    if [ "${enable_encryption}" = true ] && [ "${use_self_signed_cert}" = true ]; then
+    if [ "${enable_encryption}" = true ]; then
         log "Setting up ClickHouse client configuration"
         mkdir -p /etc/clickhouse-client
-        aws s3 cp "s3://${clickhouse_config_bucket}/client/config.xml" /etc/clickhouse-client/config.xml
+
+        # Copy CA certificate for client use
+        cp "$cert_base_dir/ca.crt" /etc/clickhouse-client/ca.crt
+
+        # Create client config that uses the CA cert
+        cat > /etc/clickhouse-client/config.xml << EOF
+<clickhouse>
+    <openSSL>
+        <client>
+            <loadDefaultCAFile>false</loadDefaultCAFile>
+            <caConfig>/etc/clickhouse-client/ca.crt</caConfig>
+            <cacheSessions>true</cacheSessions>
+            <disableProtocols>sslv2,sslv3</disableProtocols>
+            <preferServerCiphers>true</preferServerCiphers>
+            <invalidCertificateHandler>
+                <name>RejectCertificateHandler</name>
+            </invalidCertificateHandler>
+        </client>
+    </openSSL>
+</clickhouse>
+EOF
+
+        # Set proper permissions
         chown -R clickhouse:clickhouse /etc/clickhouse-client
         chmod 644 /etc/clickhouse-client/config.xml
+        chmod 644 /etc/clickhouse-client/ca.crt
+
+        log "ClickHouse client configuration completed"
     fi
 }
 
@@ -243,6 +270,7 @@ trap 'handle_error $LINENO' ERR
 
 log "Starting system setup..."
 apt-get update
+apt-get install -y jq
 
 setup_ssm
 install_aws_cli
