@@ -61,7 +61,8 @@ install_cloudwatch_agent() {
 }
 
 setup_ebs_volume() {
-    log "Setting up EBS volume..."
+    local mount_path=$1
+    log "Setting up EBS volume for $mount_path..."
 
     # Wait for device to be available
     sleep 10
@@ -87,38 +88,33 @@ setup_ebs_volume() {
     log "Formatting $${DEVICE_NAME} with XFS"
     mkfs.xfs $${DEVICE_NAME}
 
-    log "Creating mount point at /var/lib/clickhouse"
-    mkdir -p /var/lib/clickhouse
+    log "Creating mount point at $mount_path"
+    mkdir -p "$mount_path"
 
-    log "Mounting $${DEVICE_NAME} to /var/lib/clickhouse"
-    mount $${DEVICE_NAME} /var/lib/clickhouse
+    log "Mounting $${DEVICE_NAME} to $mount_path"
+    mount $${DEVICE_NAME} "$mount_path"
 
     log "Adding to fstab"
-    echo "$${DEVICE_NAME}  /var/lib/clickhouse  xfs  defaults  0  0" >> /etc/fstab
+    echo "$${DEVICE_NAME}  $mount_path  xfs  defaults  0  0" >> /etc/fstab
 }
 
 setup_clickhouse_server() {
     log "Setting up ClickHouse server..."
 
-    # First install ClickHouse (this creates the user/group)
-    log "Installing ClickHouse server and client"
+    # Install ClickHouse server and client
     apt-get install -y clickhouse-server clickhouse-client
 
-    # Setup EBS volume
-    setup_ebs_volume
-
-    # Now set permissions (after clickhouse user exists)
-    log "Setting permissions"
+    # Setup EBS volume for ClickHouse data
+    setup_ebs_volume "/var/lib/clickhouse"
     chown -R clickhouse:clickhouse /var/lib/clickhouse
 
     # Copy configurations
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
     aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/config.d/" "$${CLICKHOUSE_CONFIG_DIR}" --recursive
-    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/users.xml" "/etc/clickhouse-server/users.xml"  # Add this line
+    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/users.xml" "/etc/clickhouse-server/users.xml"
 
-    # Copy certificates
+    # Copy certificates and setup client config
     setup_certificates "server"
-
     setup_client_config "server"
 
     # Start service
@@ -128,29 +124,12 @@ setup_clickhouse_server() {
 setup_clickhouse_keeper() {
     log "Setting up ClickHouse Keeper..."
 
-    # First install Keeper (this creates the user/group)
-    log "Installing ClickHouse Keeper"
+    # Install only Keeper package
     apt-get install -y clickhouse-keeper
 
-    # Setup EBS volume
-    setup_ebs_volume
+    # Setup EBS volume for Keeper data
+    setup_ebs_volume "/var/lib/clickhouse-keeper"
 
-    # Create additional directories
-    mkdir -p /var/lib/clickhouse/coordination/logs
-    mkdir -p /var/lib/clickhouse/coordination/snapshots
-
-    # Now set permissions (after clickhouse user exists)
-    log "Setting permissions"
-    chown -R clickhouse:clickhouse /var/lib/clickhouse
-
-    # Copy configurations
-    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
-    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/keeper_config.xml" "$${KEEPER_CONFIG_PATH}"
-
-    # Copy certificates
-    setup_certificates "keeper"
-
-    # Before starting the service
     # Create required directories
     mkdir -p /var/lib/clickhouse-keeper
     mkdir -p /var/lib/clickhouse/coordination/log
@@ -167,11 +146,19 @@ setup_clickhouse_keeper() {
     chmod -R 750 /var/lib/clickhouse/coordination
     chmod -R 750 /var/log/clickhouse-keeper
 
-    # Ensure configuration file has correct permissions
-    chown clickhouse:clickhouse /etc/clickhouse-keeper/keeper_config.xml
-    chmod 640 /etc/clickhouse-keeper/keeper_config.xml
+    # Copy configurations
+    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/cloudwatch.json" "$${CLOUDWATCH_CONFIG_PATH}"
+    aws s3 cp "s3://${clickhouse_config_bucket}/${node_name}/keeper_config.xml" "$${KEEPER_CONFIG_PATH}"
 
-    # Then start service
+    # Set keeper config permissions
+    chown clickhouse:clickhouse "$${KEEPER_CONFIG_PATH}"
+    chmod 640 "$${KEEPER_CONFIG_PATH}"
+
+    # Copy certificates and setup client config if encryption enabled
+    setup_certificates "keeper"
+    setup_client_config "keeper"
+
+    # Enable and start service
     systemctl enable clickhouse-keeper
     systemctl start clickhouse-keeper
 }
@@ -197,31 +184,38 @@ setup_certificates() {
             exit 1
         fi
 
-        # Create certificate directory if it doesn't exist
         mkdir -p "$cert_base_dir"
 
-        # Fetch CA certificate from Secrets Manager
-        log "Fetching CA materials from Secrets Manager"
-        ca_materials=$(aws secretsmanager get-secret-value \
-            --secret-id "${ca_secret_arn}" \
-            --query SecretString \
-            --output text)
+        if [ "${use_external_certs}" = true ]; then
+            echo "${external_ca_cert}" > "$cert_base_dir/ca.crt"
 
-        # Extract and save CA certificate
-        echo "$ca_materials" | jq -r '.ca_certificate' > "$cert_base_dir/ca.crt"
+            log "Fetching node certificate materials from Secrets Manager"
+            node_materials=$(aws secretsmanager get-secret-value \
+                --secret-id "${node_secret_arn}" \
+                --query SecretString \
+                --output text)
 
-        # Fetch node-specific certificate and key
-        log "Fetching node certificate materials from Secrets Manager"
-        node_materials=$(aws secretsmanager get-secret-value \
-            --secret-id "${node_secret_arn}" \
-            --query SecretString \
-            --output text)
+            echo "$node_materials" | jq -r '.certificate' > "$cert_base_dir/server.crt"
+            echo "$node_materials" | jq -r '.private_key' > "$cert_base_dir/server.key"
+        else
+            log "Fetching CA materials from Secrets Manager"
+            ca_materials=$(aws secretsmanager get-secret-value \
+                --secret-id "${ca_secret_arn}" \
+                --query SecretString \
+                --output text)
 
-        # Extract and save node certificate and private key
-        echo "$node_materials" | jq -r '.certificate' > "$cert_base_dir/server.crt"
-        echo "$node_materials" | jq -r '.private_key' > "$cert_base_dir/server.key"
+            echo "$ca_materials" | jq -r '.ca_certificate' > "$cert_base_dir/ca.crt"
 
-        # Set correct permissions
+            log "Fetching node certificate materials from Secrets Manager"
+            node_materials=$(aws secretsmanager get-secret-value \
+                --secret-id "${node_secret_arn}" \
+                --query SecretString \
+                --output text)
+
+            echo "$node_materials" | jq -r '.certificate' > "$cert_base_dir/server.crt"
+            echo "$node_materials" | jq -r '.private_key' > "$cert_base_dir/server.key"
+        fi
+
         chown -R clickhouse:clickhouse "$cert_base_dir"
         chmod 600 "$cert_base_dir/server.key"
         chmod 644 "$cert_base_dir/server.crt" "$cert_base_dir/ca.crt"
@@ -244,11 +238,8 @@ setup_client_config() {
 
         log "Setting up ClickHouse client configuration"
         mkdir -p /etc/clickhouse-client
-
-        # Copy CA certificate for client use
         cp "$cert_base_dir/ca.crt" /etc/clickhouse-client/ca.crt
 
-        # Create client config that uses the CA cert
         cat > /etc/clickhouse-client/config.xml << EOF
 <clickhouse>
     <openSSL>
@@ -266,7 +257,6 @@ setup_client_config() {
 </clickhouse>
 EOF
 
-        # Set proper permissions
         chown -R clickhouse:clickhouse /etc/clickhouse-client
         chmod 644 /etc/clickhouse-client/config.xml
         chmod 644 /etc/clickhouse-client/ca.crt

@@ -40,11 +40,10 @@ module "clickhouse_cluster" {
     clickhouse_config_bucket = aws_s3_bucket.configuration.bucket,
     enable_encryption        = var.enable_encryption,
     internal_domain          = local.internal_domain,
-    ssl_key_bits             = var.ssl_key_bits,
-    ssl_cert_days            = var.ssl_cert_days
-    nlb_dns                  = var.enable_nlb ? aws_lb.nlb[0].dns_name : ""
-    ca_secret_arn            = var.enable_encryption ? aws_secretsmanager_secret.ca_materials[0].arn : "",
-    node_secret_arn          = var.enable_encryption ? aws_secretsmanager_secret.node_certs[each.key].arn : ""
+    use_external_certs       = var.use_external_certs
+    external_ca_cert         = var.use_external_certs ? var.external_ca_cert : ""
+    ca_secret_arn            = var.use_external_certs ? "" : aws_secretsmanager_secret.ca_materials[0].arn
+    node_secret_arn          = var.use_external_certs ? var.external_cert_secret_ids.cluster_nodes[each.key] : aws_secretsmanager_secret.node_certs[each.key].arn
   })
 
   metadata_options = {
@@ -83,11 +82,10 @@ module "clickhouse_keeper" {
     clickhouse_config_bucket = aws_s3_bucket.configuration.bucket,
     enable_encryption        = var.enable_encryption,
     internal_domain          = local.internal_domain,
-    ssl_key_bits             = var.ssl_key_bits,
-    ssl_cert_days            = var.ssl_cert_days
-    nlb_dns                  = var.enable_nlb ? aws_lb.nlb[0].dns_name : ""
-    ca_secret_arn            = var.enable_encryption ? aws_secretsmanager_secret.ca_materials[0].arn : "",
-    node_secret_arn          = var.enable_encryption ? aws_secretsmanager_secret.node_certs[each.key].arn : ""
+    use_external_certs       = var.use_external_certs
+    external_ca_cert         = var.use_external_certs ? var.external_ca_cert : ""
+    ca_secret_arn            = var.use_external_certs ? "" : aws_secretsmanager_secret.ca_materials[0].arn
+    node_secret_arn          = var.use_external_certs ? var.external_cert_secret_ids.cluster_nodes[each.key] : aws_secretsmanager_secret.node_certs[each.key].arn
   })
 
   metadata_options = {

@@ -12,12 +12,15 @@ resource "aws_lb" "nlb" {
 resource "aws_lb_listener" "clickhouse_nlb_listener" {
   count             = var.enable_nlb ? 1 : 0
   load_balancer_arn = aws_lb.nlb[0].arn
-  port              = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
-  protocol          = var.enable_encryption ? "TLS" : "TCP"
+  port              = var.enable_nlb_tls || var.enable_encryption ? var.tcp_port_secure : var.tcp_port
+  protocol          = var.enable_nlb_tls ? "TLS" : "TCP"
 
-  # Use CA-signed cert from ACM when encryption is enabled
-  certificate_arn = var.enable_encryption ? aws_acm_certificate.nlb[0].arn : null
-  ssl_policy      = var.enable_encryption ? "ELBSecurityPolicy-TLS13-1-2-2021-06" : null
+  # Use provided certificate ARN or generated certificate
+  certificate_arn = var.enable_nlb_tls ? (
+    var.use_generated_cert ? aws_acm_certificate.nlb[0].arn : var.tls_certificate_arn
+  ) : null
+
+  ssl_policy = var.enable_nlb_tls ? "ELBSecurityPolicy-TLS13-1-2-2021-06" : null
 
   default_action {
     type             = "forward"
@@ -28,7 +31,7 @@ resource "aws_lb_listener" "clickhouse_nlb_listener" {
 resource "aws_lb_target_group" "clickhouse_nlb_target_group" {
   count       = var.enable_nlb ? 1 : 0
   name        = "clickhouse-nlb-tg"
-  port        = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
+  port        = var.enable_nlb_tls ? var.tcp_port_secure : var.tcp_port
   protocol    = "TCP"
   target_type = "instance"
   vpc_id      = module.vpc.vpc_id

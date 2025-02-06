@@ -8,8 +8,22 @@ locals {
 
   internal_domain = "clickhouse.internal"
 
+  validate_nlb_tls = (
+    !var.enable_nlb_tls ||                                                              # NLB TLS is disabled, no validation needed
+    (var.enable_nlb_tls && var.tls_certificate_arn != "" && !var.use_generated_cert) || # Using provided cert
+    (var.enable_nlb_tls && var.use_generated_cert && var.enable_encryption)             # Using generated cert with cluster encryption
+  )
+  validate_nlb_tls_check = regex("^$", (!local.validate_nlb_tls ? "Invalid NLB TLS configuration" : ""))
+
   # Calculate total nodes needed
   total_replicas = sum([for shard in var.shards : shard.replica_count])
+
+  validate_external_certs = (
+    !var.use_external_certs ||                                                                                              # Not using external certs, no validation needed
+    (var.use_external_certs && var.enable_encryption && var.external_ca_cert != "" && var.external_cert_secret_ids != null) # Using external certs with all required inputs
+  )
+  validate_external_certs_check = regex("^$", (!local.validate_external_certs ? "Invalid external certificate configuration" : ""))
+
 
   # Create a map of all cluster nodes with their shard and replica information
   cluster_nodes = merge([

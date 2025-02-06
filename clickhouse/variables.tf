@@ -140,10 +140,58 @@ variable "nlb_type" {
   }
 }
 
+variable "enable_nlb_tls" {
+  type        = bool
+  description = "Enable TLS termination at the NLB. Requires either an existing certificate ARN or cluster encryption to be enabled"
+  default     = false
+}
+
 variable "tls_certificate_arn" {
   type        = string
-  description = "ARN of ACM certificate to use for TLS. Required when enable_encryption is true and use_self_signed_cert is false"
+  description = "ARN of an existing ACM certificate to use for NLB TLS termination. Required if enable_nlb_tls is true and using an existing certificate"
   default     = ""
+
+  validation {
+    condition     = can(regex("^$|^arn:aws:acm:[a-z0-9-]+:[0-9]{12}:certificate/[a-zA-Z0-9-]+$", var.tls_certificate_arn))
+    error_message = "The tls_certificate_arn must be a valid ACM certificate ARN or empty string"
+  }
+}
+
+variable "use_generated_cert" {
+  type        = bool
+  description = "Use the cluster's generated CA to create a certificate for the NLB. Requires enable_encryption to be true"
+  default     = false
+}
+
+variable "use_external_certs" {
+  type        = bool
+  description = "Use externally provided certificates instead of generating them"
+  default     = false
+}
+
+variable "external_ca_cert" {
+  type        = string
+  description = "PEM-encoded CA certificate for cluster communication. Required if use_external_certs is true"
+  default     = ""
+
+  validation {
+    condition     = var.use_external_certs ? can(regex("^-----BEGIN CERTIFICATE-----", var.external_ca_cert)) : true
+    error_message = "When using external certificates, external_ca_cert must be a valid PEM-encoded certificate"
+  }
+}
+
+variable "external_cert_secret_ids" {
+  type = object({
+    cluster_nodes = map(string) # Map of node name to Secrets Manager ARN containing certificate and private key
+    keeper_nodes  = map(string)
+  })
+  description = "Map of Secret Manager ARNs containing certificates and private keys for each node. Required if use_external_certs is true"
+  default     = null
+
+  validation {
+    condition     = var.use_external_certs ? var.external_cert_secret_ids != null : true
+    error_message = "When using external certificates, external_cert_secret_ids must be provided"
+  }
 }
 
 variable "cluster_domain" {
