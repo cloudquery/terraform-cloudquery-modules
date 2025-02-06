@@ -119,7 +119,7 @@ setup_clickhouse_server() {
     # Copy certificates
     setup_certificates "server"
 
-    setup_client_config
+    setup_client_config "server"
 
     # Start service
     service clickhouse-server start
@@ -232,6 +232,16 @@ setup_certificates() {
 
 setup_client_config() {
     if [ "${enable_encryption}" = true ]; then
+        local cert_base_dir=""
+        if [ "$1" = "server" ]; then
+            cert_base_dir="/etc/clickhouse-server"
+        elif [ "$1" = "keeper" ]; then
+            cert_base_dir="/etc/clickhouse-keeper"
+        else
+            log "Invalid certificate type. Must be 'server' or 'keeper'."
+            exit 1
+        fi
+
         log "Setting up ClickHouse client configuration"
         mkdir -p /etc/clickhouse-client
 
