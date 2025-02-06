@@ -1,7 +1,7 @@
 resource "aws_lb" "nlb" {
   count              = var.enable_nlb ? 1 : 0
-  name               = "clickhouse-nlb"
-  internal           = var.nlb_type == "internal"
+  name               = "${var.cluster_name}-nlb"
+  internal           = false
   load_balancer_type = "network"
   security_groups    = [aws_security_group.nlb[0].id]
   subnets            = var.nlb_type == "internal" ? module.vpc.private_subnets : module.vpc.public_subnets
@@ -30,7 +30,7 @@ resource "aws_lb_listener" "clickhouse_nlb_listener" {
 
 resource "aws_lb_target_group" "clickhouse_nlb_target_group" {
   count       = var.enable_nlb ? 1 : 0
-  name        = "clickhouse-nlb-tg"
+  name        = "${var.cluster_name}-nlb-tg"
   port        = var.enable_nlb_tls ? var.tcp_port_secure : var.tcp_port
   protocol    = "TCP"
   target_type = "instance"

@@ -2,8 +2,8 @@ provider "aws" {
   region = "us-west-2"
 }
 
-module "clickhouse_sharded" {
-  source = "../../clickhouse"
+module "clickhouse_multi_shard" {
+  source = "../../"
 
   # 3 shards with 2 replicas each for scalability and HA
   shards = [
@@ -31,7 +31,7 @@ module "clickhouse_sharded" {
   # Only allow connections from your network
   allowed_cidr_blocks = ["10.0.0.0/8"]
 
-  cluster_name = "clickhouse-sharded"
+  cluster_name = "clickhouse-multi-shard"
 
   tags = {
     Environment = "production"

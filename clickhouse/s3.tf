@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "configuration" {
-  bucket_prefix = "clickhouse-config"
+  bucket_prefix = var.cluster_name
   force_destroy = true
 
   tags = var.tags

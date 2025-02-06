@@ -13,7 +13,11 @@ variable "region" {
 variable "cluster_name" {
   type        = string
   description = "The name of the ClickHouse cluster"
-  default     = "clickhouse_cluster"
+  default     = "clickhouse"
+  validation {
+    error_message = "cluster_name must be less than 30 characters and only contain alphanumeric characters and hyphens, and not start with a hyphen"
+    condition     = length(var.cluster_name) <= 30 && !startswith(var.cluster_name, "-") && can(regex("^[a-zA-Z0-9-]+$", var.cluster_name))
+  }
 }
 
 variable "cluster_node_count" {

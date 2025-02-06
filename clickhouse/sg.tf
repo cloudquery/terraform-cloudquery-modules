@@ -1,21 +1,21 @@
 # Base security groups (without any rules)
 resource "aws_security_group" "nlb" {
   count       = var.enable_nlb ? 1 : 0
-  name        = "clickhouse-nlb-sg"
+  name        = "${var.cluster_name}-nlb-sg"
   description = "Security group for the ClickHouse NLB"
   vpc_id      = module.vpc.vpc_id
   tags        = var.tags
 }
 
 resource "aws_security_group" "clickhouse_cluster" {
-  name        = "clickhouse_cluster-sg"
+  name        = "${var.cluster_name}-cluster-sg"
   description = "Security group for the ClickHouse cluster"
   vpc_id      = module.vpc.vpc_id
   tags        = var.tags
 }
 
 resource "aws_security_group" "clickhouse_keeper" {
-  name        = "clickhouse-keeper-sg"
+  name        = "${var.cluster_name}-keeper-sg"
   description = "Security group for the ClickHouse keepers"
   vpc_id      = module.vpc.vpc_id
   tags        = var.tags
