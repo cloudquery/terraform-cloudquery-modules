@@ -1,4 +1,30 @@
 <clickhouse>
+    <listen_host>0.0.0.0</listen_host>
+    <logger>
+        <!-- Possible levels [1]:
+
+          - none (turns off logging)
+          - fatal
+          - critical
+          - error
+          - warning
+          - notice
+          - information
+          - debug
+          - trace
+
+            [1]: https://github.com/pocoproject/poco/blob/poco-1.9.4-release/Foundation/include/Poco/Logger.h#L105-L114
+        -->
+        <level>trace</level>
+        <log>/var/log/clickhouse-keeper/clickhouse-keeper.log</log>
+        <errorlog>/var/log/clickhouse-keeper/clickhouse-keeper.err.log</errorlog>
+        <!-- Rotation policy
+             See https://github.com/pocoproject/poco/blob/poco-1.9.4-release/Foundation/include/Poco/FileChannel.h#L54-L85
+          -->
+        <size>1000M</size>
+        <count>10</count>
+        <!-- <console>1</console> -->        <!-- Default behavior is autodetection (log to console if not daemon mode and is tty) -->
+    </logger>
     <keeper_server>
         %{ if enable_encryption }
         <tcp_port_secure>${keeper_port_secure}</tcp_port_secure>
