@@ -171,7 +171,6 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="input_allowed_cidr_blocks"></a> [allowed\_cidr\_blocks](#input\_allowed\_cidr\_blocks) | List of CIDR blocks allowed to access the ClickHouse cluster | `list(string)` | <pre>[<br/>  "0.0.0.0/0"<br/>]</pre> | no |
 | <a name="input_clickhouse_instance_type"></a> [clickhouse\_instance\_type](#input\_clickhouse\_instance\_type) | The instance type for the ClickHouse servers | `string` | `"t2.medium"` | no |
 | <a name="input_clickhouse_volume_size"></a> [clickhouse\_volume\_size](#input\_clickhouse\_volume\_size) | The size of the EBS volume for the ClickHouse servers in GB | `number` | `10` | no |
-| <a name="input_clickhouse_volume_type"></a> [clickhouse\_volume\_type](#input\_clickhouse\_volume\_type) | The type of EBS volume for the ClickHouse servers | `string` | `"gp2"` | no |
 | <a name="input_cluster_domain"></a> [cluster\_domain](#input\_cluster\_domain) | Domain name for the cluster (used for certificates) | `string` | `""` | no |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | The name of the ClickHouse cluster | `string` | `"clickhouse"` | no |
 | <a name="input_default_user_networks"></a> [default\_user\_networks](#input\_default\_user\_networks) | List of networks allowed to connect as default user | `list(string)` | <pre>[<br/>  "::/0"<br/>]</pre> | no |
@@ -190,7 +189,6 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="input_keeper_port_secure"></a> [keeper\_port\_secure](#input\_keeper\_port\_secure) | Secure SSL ClickHouse Keeper port | `number` | `9281` | no |
 | <a name="input_keeper_raft_port"></a> [keeper\_raft\_port](#input\_keeper\_raft\_port) | ClickHouse Keeper Raft port | `number` | `9234` | no |
 | <a name="input_keeper_volume_size"></a> [keeper\_volume\_size](#input\_keeper\_volume\_size) | The size of the EBS volume for the ClickHouse keepers in GB | `number` | `10` | no |
-| <a name="input_keeper_volume_type"></a> [keeper\_volume\_type](#input\_keeper\_volume\_type) | The type of EBS volume for the ClickHouse keepers | `string` | `"gp2"` | no |
 | <a name="input_key_name"></a> [key\_name](#input\_key\_name) | Name of an AWS key pair to use for SSH access (must exist in the AWS account) | `string` | `""` | no |
 | <a name="input_nlb_type"></a> [nlb\_type](#input\_nlb\_type) | Type of NLB to create - internal or external | `string` | `"internal"` | no |
 | <a name="input_prometheus_port"></a> [prometheus\_port](#input\_prometheus\_port) | Prometheus metrics port | `number` | `9363` | no |
