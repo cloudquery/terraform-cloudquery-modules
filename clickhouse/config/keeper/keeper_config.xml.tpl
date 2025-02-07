@@ -25,59 +25,61 @@
         <count>10</count>
         <!-- <console>1</console> -->        <!-- Default behavior is autodetection (log to console if not daemon mode and is tty) -->
     </logger>
-
-    <max_connections>4096</max_connections>
-
     <keeper_server>
-        <tcp_port>9181</tcp_port>
-
-        <!-- Must be unique among all keeper serves -->
+        %{ if enable_encryption }
+        <tcp_port_secure>${keeper_port_secure}</tcp_port_secure>
+        %{ else }
+        <tcp_port>${keeper_port}</tcp_port>
+        %{ endif }
         <server_id>${server_id}</server_id>
 
-        <log_storage_path>/var/lib/clickhouse/coordination/logs</log_storage_path>
+        <log_storage_path>/var/lib/clickhouse/coordination/log</log_storage_path>
         <snapshot_storage_path>/var/lib/clickhouse/coordination/snapshots</snapshot_storage_path>
+
+        <data_path>/var/lib/clickhouse-keeper</data_path>
 
         <coordination_settings>
             <operation_timeout_ms>10000</operation_timeout_ms>
-            <min_session_timeout_ms>10000</min_session_timeout_ms>
-            <session_timeout_ms>100000</session_timeout_ms>
+            <session_timeout_ms>30000</session_timeout_ms>
             <raft_logs_level>information</raft_logs_level>
-            <compress_logs>false</compress_logs>
-            <!-- All settings listed in https://github.com/ClickHouse/ClickHouse/blob/master/src/Coordination/CoordinationSettings.h -->
         </coordination_settings>
 
-        <!-- enable sanity hostname checks for cluster configuration (e.g. if localhost is used with remote endpoints) -->
-        <hostname_checks_enabled>true</hostname_checks_enabled>
         <raft_configuration>
+            %{ if enable_encryption }
+            <secure>true</secure>
+            %{ endif }
             %{~ for keeper in keeper_nodes ~}
             <server>
                 <id>${keeper.id}</id>
                 <hostname>${keeper.host}</hostname>
-                <port>9234</port>
+                <port>${keeper_raft_port}</port>
             </server>
             %{~ endfor ~}
         </raft_configuration>
     </keeper_server>
 
-
+    %{ if enable_encryption }
     <openSSL>
         <server>
-            <!-- Used for secure tcp port -->
-            <!-- openssl req -subj "/CN=localhost" -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout /etc/clickhouse-server/server.key -out /etc/clickhouse-server/server.crt -->
-            <!-- <certificateFile>/etc/clickhouse-keeper/server.crt</certificateFile> -->
-            <!-- <privateKeyFile>/etc/clickhouse-keeper/server.key</privateKeyFile> -->
-            <!-- dhparams are optional. You can delete the <dhParamsFile> element.
-                 To generate dhparams, use the following command:
-                  openssl dhparam -out /etc/clickhouse-keeper/dhparam.pem 4096
-                 Only file format with BEGIN DH PARAMETERS is supported.
-              -->
-            <!-- <dhParamsFile>/etc/clickhouse-keeper/dhparam.pem</dhParamsFile> -->
-            <verificationMode>none</verificationMode>
-            <loadDefaultCAFile>true</loadDefaultCAFile>
+            <certificateFile>/etc/clickhouse-keeper/server.crt</certificateFile>
+            <privateKeyFile>/etc/clickhouse-keeper/server.key</privateKeyFile>
+            <verificationMode>relaxed</verificationMode>
+            <caConfig>/etc/clickhouse-keeper/ca.crt</caConfig>
             <cacheSessions>true</cacheSessions>
             <disableProtocols>sslv2,sslv3</disableProtocols>
             <preferServerCiphers>true</preferServerCiphers>
         </server>
+        <client>
+            <loadDefaultCAFile>false</loadDefaultCAFile>
+            <caConfig>/etc/clickhouse-keeper/ca.crt</caConfig>
+            <cacheSessions>true</cacheSessions>
+            <disableProtocols>sslv2,sslv3</disableProtocols>
+            <preferServerCiphers>true</preferServerCiphers>
+            <verificationMode>relaxed</verificationMode>
+            <invalidCertificateHandler>
+                <name>RejectCertificateHandler</name>
+            </invalidCertificateHandler>
+        </client>
     </openSSL>
-
+    %{ endif }
 </clickhouse>

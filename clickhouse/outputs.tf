@@ -23,3 +23,8 @@ output "clickhouse_keeper_ips" {
 output "clickhouse_nlb_dns" {
   value = var.enable_nlb ? aws_lb.nlb[0].dns_name : ""
 }
+
+# Output the Secret ARN for use in user_data
+output "ca_secret_arn" {
+  value = var.enable_encryption ? aws_secretsmanager_secret.ca_materials[0].arn : ""
+}

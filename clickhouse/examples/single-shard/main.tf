@@ -1,6 +1,7 @@
 provider "aws" {
-  region = "us-west-2"
+  region = "us-west-1"
 }
+
 
 module "clickhouse_single_shard" {
   source = "../.."

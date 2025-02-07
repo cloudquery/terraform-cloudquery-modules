@@ -1,10 +1,14 @@
 <clickhouse>
     <zookeeper>
         %{~ for keeper in keeper_nodes ~}
-        <!-- where are the ZK nodes -->
         <node>
             <host>${keeper}</host>
-            <port>9181</port>
+            %{ if enable_encryption }
+            <port>${keeper_port_secure}</port>
+            <secure>1</secure>
+            %{ else }
+            <port>${keeper_port}</port>
+            %{ endif }
         </node>
         %{~ endfor ~}
     </zookeeper>

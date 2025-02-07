@@ -27,6 +27,7 @@ module "clickhouse_cluster" {
   name                 = each.key
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
   ami                  = data.aws_ami.ubuntu.id
+  key_name             = var.key_name != "" ? var.key_name : null
 
   instance_type               = var.clickhouse_instance_type
   vpc_security_group_ids      = [aws_security_group.clickhouse_cluster.id]
@@ -36,13 +37,19 @@ module "clickhouse_cluster" {
   user_data = templatefile("${path.module}/scripts/install_clickhouse.sh.tpl", {
     node_name                = each.value.name,
     clickhouse_server        = true,
-    clickhouse_config_bucket = aws_s3_bucket.configuration.bucket
+    clickhouse_config_bucket = aws_s3_bucket.configuration.bucket,
+    enable_encryption        = var.enable_encryption,
+    internal_domain          = local.internal_domain,
+    use_external_certs       = var.use_external_certs
+    external_ca_cert         = var.use_external_certs ? var.external_ca_cert : ""
+    ca_secret_arn            = var.use_external_certs ? "" : aws_secretsmanager_secret.ca_materials[0].arn
+    node_secret_arn          = var.use_external_certs ? var.external_cert_secret_ids.cluster_nodes[each.key] : aws_secretsmanager_secret.node_certs[each.key].arn
   })
 
   metadata_options = {
     http_endpoint               = "enabled"  # Enable IMDS
     http_tokens                 = "required" # IMDSv2 (more secure)
-    http_put_response_hop_limit = 1          # Restrict token usage
+    http_put_response_hop_limit = 2          # Restrict token usage
     instance_metadata_tags      = "enabled"  # Allow tag access
   }
 
@@ -62,6 +69,7 @@ module "clickhouse_keeper" {
   name                 = each.key
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
   ami                  = data.aws_ami.ubuntu.id
+  key_name             = var.key_name != "" ? var.key_name : null
 
   instance_type               = var.keeper_instance_type
   vpc_security_group_ids      = [aws_security_group.clickhouse_keeper.id]
@@ -71,13 +79,19 @@ module "clickhouse_keeper" {
   user_data = templatefile("${path.module}/scripts/install_clickhouse.sh.tpl", {
     node_name                = each.value.name,
     clickhouse_server        = false,
-    clickhouse_config_bucket = aws_s3_bucket.configuration.bucket
+    clickhouse_config_bucket = aws_s3_bucket.configuration.bucket,
+    enable_encryption        = var.enable_encryption,
+    internal_domain          = local.internal_domain,
+    use_external_certs       = var.use_external_certs
+    external_ca_cert         = var.use_external_certs ? var.external_ca_cert : ""
+    ca_secret_arn            = var.use_external_certs ? "" : aws_secretsmanager_secret.ca_materials[0].arn
+    node_secret_arn          = var.use_external_certs ? var.external_cert_secret_ids.cluster_nodes[each.key] : aws_secretsmanager_secret.node_certs[each.key].arn
   })
 
   metadata_options = {
     http_endpoint               = "enabled"  # Enable IMDS
     http_tokens                 = "required" # IMDSv2 (more secure)
-    http_put_response_hop_limit = 1          # Restrict token usage
+    http_put_response_hop_limit = 2          # Restrict token usage
     instance_metadata_tags      = "enabled"  # Allow tag access
   }
 
@@ -88,4 +102,3 @@ module "clickhouse_keeper" {
     aws_ebs_volume.keeper
   ]
 }
-

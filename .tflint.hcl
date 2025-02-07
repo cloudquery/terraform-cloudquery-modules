@@ -5,8 +5,8 @@ plugin "aws" {
 }
 
 config {
-  module = true
-  force  = false
+  call_module_type = "local"  # Replaces the old "module = true"
+  force            = false
 }
 
 rule "terraform_deprecated_interpolation" {

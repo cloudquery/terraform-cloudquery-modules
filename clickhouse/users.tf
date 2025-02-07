@@ -1,11 +1,13 @@
 resource "random_password" "default_user" {
-  length  = 16
-  special = true
+  length           = 16
+  special          = true
+  override_special = "-_~"
 }
 
 resource "random_password" "admin_user" {
-  length  = 16
-  special = true
+  length           = 16
+  special          = true
+  override_special = "-_~"
 }
 
 # Store passwords in Secrets Manager for retrieval
