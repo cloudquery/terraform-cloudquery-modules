@@ -42,8 +42,8 @@ module "clickhouse_cluster" {
     internal_domain          = local.internal_domain,
     use_external_certs       = var.use_external_certs
     external_ca_cert         = var.use_external_certs ? var.external_ca_cert : ""
-    ca_secret_arn            = var.use_external_certs ? "" : aws_secretsmanager_secret.ca_materials[0].arn
-    node_secret_arn          = var.use_external_certs ? var.external_cert_secret_ids.cluster_nodes[each.key] : aws_secretsmanager_secret.node_certs[each.key].arn
+    ca_secret_arn            = !var.enable_encryption || var.use_external_certs ? "" : aws_secretsmanager_secret.ca_materials[0].arn
+    node_secret_arn          = var.use_external_certs ? var.external_cert_secret_ids.cluster_nodes[each.key] : var.enable_encryption ? aws_secretsmanager_secret.node_certs[each.key].arn : ""
   })
 
   metadata_options = {
@@ -84,8 +84,8 @@ module "clickhouse_keeper" {
     internal_domain          = local.internal_domain,
     use_external_certs       = var.use_external_certs
     external_ca_cert         = var.use_external_certs ? var.external_ca_cert : ""
-    ca_secret_arn            = var.use_external_certs ? "" : aws_secretsmanager_secret.ca_materials[0].arn
-    node_secret_arn          = var.use_external_certs ? var.external_cert_secret_ids.cluster_nodes[each.key] : aws_secretsmanager_secret.node_certs[each.key].arn
+    ca_secret_arn            = !var.enable_encryption || var.use_external_certs ? "" : aws_secretsmanager_secret.ca_materials[0].arn
+    node_secret_arn          = var.use_external_certs ? var.external_cert_secret_ids.keeper_nodes[each.key] : var.enable_encryption ? aws_secretsmanager_secret.node_certs[each.key].arn : ""
   })
 
   metadata_options = {

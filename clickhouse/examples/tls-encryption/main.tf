@@ -46,9 +46,7 @@ module "secure_clickhouse" {
 
   # Storage configuration
   clickhouse_volume_size = 100
-  clickhouse_volume_type = "gp3"
   keeper_volume_size     = 20
-  keeper_volume_type     = "gp3"
 
   # AWS specific settings
   region = "us-west-2"
