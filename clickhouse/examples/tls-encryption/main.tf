@@ -1,10 +1,5 @@
 provider "aws" {
-  region = "us-west-2"
-}
-
-resource "aws_acm_certificate" "clickhouse" {
-  domain_name       = "clickhouse.mnorbury.me"
-  validation_method = "DNS"
+  region = "us-east-1"
 }
 
 module "secure_clickhouse" {
@@ -13,22 +8,38 @@ module "secure_clickhouse" {
   # Enable encryption features
   enable_encryption = true
   enable_nlb        = true
-  nlb_type          = "external" # or "external" if you need public access
+  nlb_type          = "internal" # or "external" if you need public access
 
   # Domain configuration
-  cluster_domain = aws_acm_certificate.clickhouse.domain_name
+  cluster_domain = "clickhouse.example.com"
 
   # If you have an existing ACM certificate
-  tls_certificate_arn = aws_acm_certificate.clickhouse.arn
+  tls_certificate_arn = "arn:aws:acm:us-west-2:123456789012:certificate/abcd1234-ef56-gh78-ij90-klmnopqrstuv"
 
   # SSL certificate configuration (for node-to-node communication)
   ssl_cert_days = 365
   ssl_key_bits  = 4096
 
   # Cluster configuration
-  cluster_name       = "mnorbury-clickhouse"
+  cluster_name       = "secure-clickhouse"
   cluster_node_count = 3
   keeper_node_count  = 3 # Must be odd number for quorum
+
+  # 3 shards with 2 replicas each for scalability and HA
+  shards = [
+    {
+      replica_count = 2
+      weight        = 2 # Higher weight for newer, more powerful nodes
+    },
+    {
+      replica_count = 2
+      weight        = 1
+    },
+    {
+      replica_count = 2
+      weight        = 1
+    }
+  ]
 
   # Instance types
   clickhouse_instance_type = "r5.xlarge"
@@ -42,17 +53,6 @@ module "secure_clickhouse" {
 
   # AWS specific settings
   region = "us-west-2"
-
-  shards = [
-    {
-      replica_count = 3
-      weight        = 1 # Higher weight for newer, more powerful nodes
-    },
-    {
-      replica_count = 3
-      weight        = 1
-    },
-  ]
 
   # Additional optional settings
   tags = {
