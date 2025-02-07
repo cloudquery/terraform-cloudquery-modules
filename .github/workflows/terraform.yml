@@ -10,6 +10,7 @@ permissions:
   contents: write
   pull-requests: write
   security-events: write
+  # id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -169,6 +170,12 @@ jobs:
         working-directory: ${{ matrix.example }}
 
     steps:
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     role-to-assume: "arn:aws:iam::615713231484:role/terraform-cloudquery-modules-repo-role"
+      #     aws-region: us-east-1
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -183,3 +190,6 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
+
+      # - name: Terraform Plan
+      #   run: terraform plan
