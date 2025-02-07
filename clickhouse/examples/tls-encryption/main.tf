@@ -21,8 +21,8 @@ module "secure_clickhouse" {
   ssl_key_bits  = 4096
 
   # Cluster configuration
-  cluster_name       = "secure-clickhouse"
-  keeper_node_count  = 3 # Must be odd number for quorum
+  cluster_name      = "secure-clickhouse"
+  keeper_node_count = 3 # Must be odd number for quorum
 
   # 3 shards with 2 replicas each for scalability and HA
   shards = [
