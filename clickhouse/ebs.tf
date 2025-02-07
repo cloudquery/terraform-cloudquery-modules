@@ -2,9 +2,9 @@ resource "aws_ebs_volume" "clickhouse" {
   for_each          = local.cluster_nodes
   availability_zone = module.vpc.private_subnet_objects[each.value.subnet_index].availability_zone
   size              = var.clickhouse_volume_size
-  type              = "gp3"
-  throughput        = 125
-  iops              = 3000
+  type              = var.clickhouse_volume_type
+  throughput        = var.clickhouse_volume_type == "gp3" ? 125 : null
+  iops              = contains(["io1", "io2", "gp3"], var.clickhouse_volume_type) ? 3000 : null
   tags              = var.tags
 }
 
@@ -19,9 +19,9 @@ resource "aws_ebs_volume" "keeper" {
   for_each          = local.keeper_nodes
   availability_zone = module.vpc.private_subnet_objects[each.value.subnet_index].availability_zone
   size              = var.keeper_volume_size
-  type              = "gp3"
-  throughput        = 125
-  iops              = 3000
+  type              = var.keeper_volume_type
+  throughput        = var.keeper_volume_type == "gp3" ? 125 : null
+  iops              = contains(["io1", "io2", "gp3"], var.keeper_volume_type) ? 3000 : null
   tags              = var.tags
 }
 

@@ -47,6 +47,12 @@ variable "clickhouse_volume_size" {
   }
 }
 
+variable "clickhouse_volume_type" {
+  type        = string
+  description = "The type of EBS volume for the ClickHouse servers"
+  default     = "gp2"
+}
+
 variable "keeper_instance_type" {
   type        = string
   description = "The instance type for the ClickHouse keepers"
@@ -62,6 +68,12 @@ variable "keeper_volume_size" {
     condition     = var.keeper_volume_size >= 10
     error_message = "Volume size must be at least 10 GB"
   }
+}
+
+variable "keeper_volume_type" {
+  type        = string
+  description = "The type of EBS volume for the ClickHouse keepers"
+  default     = "gp2"
 }
 
 variable "enable_nlb" {
