@@ -1,9 +1,7 @@
-provider "aws" {
-  region = "us-east-1"
-}
-
 module "secure_clickhouse" {
   source = "../../" # Adjust based on your module path
+
+  region = "us-west-2"
 
   # Enable encryption features
   enable_encryption = true
@@ -47,9 +45,6 @@ module "secure_clickhouse" {
   # Storage configuration
   clickhouse_volume_size = 100
   keeper_volume_size     = 20
-
-  # AWS specific settings
-  region = "us-west-2"
 
   # Additional optional settings
   tags = {

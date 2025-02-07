@@ -194,7 +194,7 @@ At this stage the data should be present on all nodes of the cluster given that 
 | <a name="input_key_name"></a> [key\_name](#input\_key\_name) | Name of an AWS key pair to use for SSH access (must exist in the AWS account) | `string` | `""` | no |
 | <a name="input_nlb_type"></a> [nlb\_type](#input\_nlb\_type) | Type of NLB to create - internal or external | `string` | `"internal"` | no |
 | <a name="input_prometheus_port"></a> [prometheus\_port](#input\_prometheus\_port) | Prometheus metrics port | `number` | `9363` | no |
-| <a name="input_region"></a> [region](#input\_region) | The AWS region to deploy to | `string` | `"us-west-2"` | no |
+| <a name="input_region"></a> [region](#input\_region) | The AWS region to deploy to | `string` | n/a | yes |
 | <a name="input_retention_period"></a> [retention\_period](#input\_retention\_period) | Log retention period in days | `number` | `30` | no |
 | <a name="input_shards"></a> [shards](#input\_shards) | List of shards and their configuration. Each shard specifies how many replicas it should have and optionally its weight. | <pre>list(object({<br/>    replica_count = number<br/>    weight        = optional(number, 1)<br/>  }))</pre> | n/a | yes |
 | <a name="input_ssh_access"></a> [ssh\_access](#input\_ssh\_access) | SSH access configuration. Set enabled=false to disable SSH access, or configure cidr\_blocks for access control. | <pre>object({<br/>    enabled = bool<br/>    # cidr_blocks can be null to use VPC CIDR, or a list of explicit CIDRs<br/>    cidr_blocks = list(string)<br/>    # if true, adds VPC CIDR to the provided cidr_blocks<br/>    include_vpc_cidr = bool<br/>  })</pre> | <pre>{<br/>  "cidr_blocks": [],<br/>  "enabled": false,<br/>  "include_vpc_cidr": true<br/>}</pre> | no |
