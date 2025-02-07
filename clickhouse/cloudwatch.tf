@@ -81,6 +81,6 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 resource "aws_kms_alias" "cloudwatch" {
-  name          = "alias/clickhouse-cloudwatch"
+  name          = "alias/${var.cluster_name}-cloudwatch"
   target_key_id = aws_kms_key.cloudwatch.key_id
 }
