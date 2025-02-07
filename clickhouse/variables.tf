@@ -20,12 +20,6 @@ variable "cluster_name" {
   }
 }
 
-variable "cluster_node_count" {
-  type        = number
-  description = "The number of ClickHouse servers to deploy"
-  default     = 3
-}
-
 variable "keeper_node_count" {
   type        = number
   description = "The number of ClickHouse keepers to deploy"
