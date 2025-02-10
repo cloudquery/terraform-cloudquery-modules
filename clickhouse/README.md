@@ -213,6 +213,7 @@ At this stage the data should be present on all nodes of the cluster given that 
 |------|-------------|
 | <a name="output_ca_secret_arn"></a> [ca\_secret\_arn](#output\_ca\_secret\_arn) | Output the Secret ARN for use in user\_data |
 | <a name="output_clickhouse_cluster_ips"></a> [clickhouse\_cluster\_ips](#output\_clickhouse\_cluster\_ips) | Output the public and private IP addresses of the ClickHouse cluster |
+| <a name="output_clickhouse_credentials_arn"></a> [clickhouse\_credentials\_arn](#output\_clickhouse\_credentials\_arn) | Output the Secret ARN for the clickhouse credentials |
 | <a name="output_clickhouse_keeper_ips"></a> [clickhouse\_keeper\_ips](#output\_clickhouse\_keeper\_ips) | Output the public and private IP addresses of the ClickHouse keepers |
 | <a name="output_clickhouse_nlb_dns"></a> [clickhouse\_nlb\_dns](#output\_clickhouse\_nlb\_dns) | Output the DNS name of the NLB |
 <!-- END_TF_DOCS -->
