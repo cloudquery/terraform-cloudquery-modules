@@ -41,6 +41,6 @@ output "clickhouse_nlb_dns" {
   value = module.clickhouse_multi_shard.clickhouse_nlb_dns
 }
 
-output "clickhouse_cluster_ips" {
+output "clickhouse_credentials_arn" {
   value = module.clickhouse_multi_shard.clickhouse_credentials_arn
 }

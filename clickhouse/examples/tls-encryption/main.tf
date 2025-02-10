@@ -58,6 +58,6 @@ output "clickhouse_nlb_dns" {
   value = module.secure_clickhouse.clickhouse_nlb_dns
 }
 
-output "clickhouse_cluster_ips" {
+output "clickhouse_credentials_arn" {
   value = module.secure_clickhouse.clickhouse_credentials_arn
 }
