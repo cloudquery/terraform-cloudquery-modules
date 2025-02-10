@@ -53,3 +53,19 @@ module "secure_clickhouse" {
     Security    = "encrypted"
   }
 }
+
+output "clickhouse_cluster_ips" {
+  value = module.secure_clickhouse.clickhouse_cluster_ips
+}
+
+output "clickhouse_keeper_ips" {
+  value = module.secure_clickhouse.clickhouse_keeper_ips
+}
+
+output "clickhouse_nlb_dns" {
+  value = module.secure_clickhouse.clickhouse_nlb_dns
+}
+
+output "ca_secret_arn" {
+  value = module.secure_clickhouse.ca_secret_arn
+}

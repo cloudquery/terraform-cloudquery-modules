@@ -36,3 +36,15 @@ module "clickhouse_multi_shard" {
     Project     = "analytics"
   }
 }
+
+output "clickhouse_cluster_ips" {
+  value = module.clickhouse_multi_shard.clickhouse_cluster_ips
+}
+
+output "clickhouse_keeper_ips" {
+  value = module.clickhouse_multi_shard.clickhouse_keeper_ips
+}
+
+output "clickhouse_nlb_dns" {
+  value = module.clickhouse_multi_shard.clickhouse_nlb_dns
+}
