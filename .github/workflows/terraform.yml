@@ -71,6 +71,23 @@ jobs:
         id: fmt
         run: terraform fmt -check -recursive
 
+      - uses: terraform-linters/setup-tflint@v4
+        name: Setup TFLint
+        with:
+          tflint_version: v0.52.0
+
+      - name: Show version
+        run: tflint --version
+
+      - name: Init TFLint
+        run: tflint --init
+        env:
+          # https://github.com/terraform-linters/tflint/blob/master/docs/user-guide/plugins.md#avoiding-rate-limiting
+          GITHUB_TOKEN: ${{ github.GH_CQ_BOT }}
+
+      - name: Run TFLint
+        run: tflint -f compact
+
       - name: Validate Module Structure
         id: validate
         run: |
