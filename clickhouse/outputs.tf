@@ -28,3 +28,8 @@ output "clickhouse_nlb_dns" {
 output "ca_secret_arn" {
   value = var.enable_encryption ? aws_secretsmanager_secret.ca_materials[0].arn : ""
 }
+
+# Output the Secret ARN for the clickhouse credentials
+output "clickhouse_credentials_arn" {
+  value = aws_secretsmanager_secret.clickhouse_credentials.arn
+}
