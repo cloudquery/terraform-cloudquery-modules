@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/cloudquery/terraform-cloudquery-modules/compare/clickhouse-v0.2.0...clickhouse-v0.3.0) (2025-02-10)
+
+
+### Features
+
+* Add outputs block to examples ([#28](https://github.com/cloudquery/terraform-cloudquery-modules/issues/28)) ([18abe10](https://github.com/cloudquery/terraform-cloudquery-modules/commit/18abe10175611c60eeb8a5cd575ade66fff6fb38))
+
+
+### Bug Fixes
+
+* Configure NLB internal/external correctly ([#31](https://github.com/cloudquery/terraform-cloudquery-modules/issues/31)) ([c6217c0](https://github.com/cloudquery/terraform-cloudquery-modules/commit/c6217c00d71275924f1deed1c33c9cca76d9694c))
+
 ## [0.2.0](https://github.com/cloudquery/terraform-cloudquery-modules/compare/clickhouse-v0.1.1...clickhouse-v0.2.0) (2025-02-07)
 
 
