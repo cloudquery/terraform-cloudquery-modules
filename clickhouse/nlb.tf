@@ -1,7 +1,7 @@
 resource "aws_lb" "nlb" {
   count              = var.enable_nlb ? 1 : 0
   name               = "${var.cluster_name}-nlb"
-  internal           = false
+  internal           = var.nlb_type == "internal"
   load_balancer_type = "network"
   security_groups    = [aws_security_group.nlb[0].id]
   subnets            = var.nlb_type == "internal" ? module.vpc.private_subnets : module.vpc.public_subnets

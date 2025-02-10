@@ -1,6 +1,6 @@
 resource "aws_cloudwatch_log_group" "clickhouse" {
   name_prefix       = "clickhouse-"
-  retention_in_days = 30
+  retention_in_days = var.retention_period
 
   tags = var.tags
 

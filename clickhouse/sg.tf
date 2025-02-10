@@ -29,7 +29,7 @@ resource "aws_security_group_rule" "nlb_inbound" {
   from_port         = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
   to_port           = var.enable_encryption ? var.tcp_port_secure : var.tcp_port
   protocol          = "tcp"
-  cidr_blocks       = var.nlb_type == "external" ? ["0.0.0.0/0"] : [local.vpc_cidr]
+  cidr_blocks       = var.nlb_type == "external" ? var.allowed_cidr_blocks : [local.vpc_cidr]
   description       = "Allow inbound traffic to NLB"
 }
 
