@@ -73,7 +73,7 @@ resource "aws_lb_target_group" "clickhouse_http_nlb_target_group" {
   port        = var.enable_encryption ? var.https_port : var.http_port
   protocol    = "TCP"
   vpc_id      = module.vpc.vpc_id
-  target_type = "ip"
+  target_type = "instance"
 
   health_check {
     enabled             = true
