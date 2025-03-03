@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/cloudquery/terraform-cloudquery-modules/compare/clickhouse-v0.3.0...clickhouse-v0.4.0) (2025-03-03)
+
+
+### Features
+
+* Add http/https nlb resources ([#32](https://github.com/cloudquery/terraform-cloudquery-modules/issues/32)) ([c3ccf95](https://github.com/cloudquery/terraform-cloudquery-modules/commit/c3ccf95bbe8ffdb492456ff6de00c71c9f9ccb6d))
+
 ## [0.3.0](https://github.com/cloudquery/terraform-cloudquery-modules/compare/clickhouse-v0.2.0...clickhouse-v0.3.0) (2025-02-10)
 
 
