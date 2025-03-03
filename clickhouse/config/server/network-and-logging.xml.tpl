@@ -46,7 +46,7 @@
             <preferServerCiphers>true</preferServerCiphers>
         </server>
         <client>
-            <loadDefaultCAFile>false</loadDefaultCAFile>
+            <loadDefaultCAFile>true</loadDefaultCAFile>
             <caConfig>/etc/clickhouse-server/ca.crt</caConfig>
             <cacheSessions>true</cacheSessions>
             <disableProtocols>sslv2,sslv3</disableProtocols>
