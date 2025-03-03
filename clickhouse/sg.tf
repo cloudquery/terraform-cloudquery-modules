@@ -33,6 +33,17 @@ resource "aws_security_group_rule" "nlb_inbound" {
   description       = "Allow inbound traffic to NLB"
 }
 
+resource "aws_security_group_rule" "nlb_http_inbound" {
+  count             = var.enable_nlb ? 1 : 0
+  security_group_id = aws_security_group.nlb[0].id
+  type              = "ingress"
+  from_port         = var.enable_encryption ? var.https_port : var.http_port
+  to_port           = var.enable_encryption ? var.https_port : var.http_port
+  protocol          = "tcp"
+  cidr_blocks       = var.nlb_type == "external" ? ["0.0.0.0/0"] : [local.vpc_cidr]
+  description       = "Allow inbound HTTP traffic to ClickHouse NLB"
+}
+
 resource "aws_security_group_rule" "nlb_to_clickhouse" {
   count                    = var.enable_nlb ? 1 : 0
   security_group_id        = aws_security_group.nlb[0].id
