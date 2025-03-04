@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.1](https://github.com/cloudquery/terraform-cloudquery-modules/compare/clickhouse-v0.4.0...clickhouse-v0.4.1) (2025-03-04)
+
+
+### Bug Fixes
+
+* Allow `ping` endpoint to be reached ([#38](https://github.com/cloudquery/terraform-cloudquery-modules/issues/38)) ([8a83c89](https://github.com/cloudquery/terraform-cloudquery-modules/commit/8a83c898c2e8c4157305fbf899a3682ef6bf1209))
+* Healthcheck protocol ([#36](https://github.com/cloudquery/terraform-cloudquery-modules/issues/36)) ([3f803c4](https://github.com/cloudquery/terraform-cloudquery-modules/commit/3f803c4f0ff5b61d4ebec6f6a62a0c2d0958299b))
+* Set loadDeafaultCA to true ([#37](https://github.com/cloudquery/terraform-cloudquery-modules/issues/37)) ([c5796c0](https://github.com/cloudquery/terraform-cloudquery-modules/commit/c5796c0338e4a5686d1c6c92301cc46d2328725c))
+* Target type for http ([#34](https://github.com/cloudquery/terraform-cloudquery-modules/issues/34)) ([c74db3a](https://github.com/cloudquery/terraform-cloudquery-modules/commit/c74db3a985a58294f831c056695544e19dffab63))
+
 ## [0.4.0](https://github.com/cloudquery/terraform-cloudquery-modules/compare/clickhouse-v0.3.0...clickhouse-v0.4.0) (2025-03-03)
 
 
