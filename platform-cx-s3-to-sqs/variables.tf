@@ -189,12 +189,6 @@ variable "require_external_id" {
   default     = true
 }
 
-variable "customer_role_name" {
-  description = "Name of the IAM role to create in the customer's account"
-  type        = string
-  default     = "s3-sqs-integration-role"
-}
-
 variable "cloudquery_platform_role_arn" {
   description = "The ARN of the CloudQuery Platform role that will be allowed to assume the customer role"
   type        = string

@@ -26,7 +26,7 @@ module "clickhouse_integration" {
   queue_name = "${local.existing_bucket_name}-notifications"
 
   # Create IAM role with appropriate trust policy for ClickHouse
-  customer_role_name  = "clickhouse-s3-access-role"
+  iam_role_name       = "clickhouse-s3-access-role"
   clickhouse_role_arn = local.clickhouse_role_arn
 }
 

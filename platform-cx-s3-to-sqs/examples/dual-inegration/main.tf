@@ -36,7 +36,7 @@ module "dual_integration" {
   filter_prefix = "data/" # Optional: Filter events by prefix
 
   # Role configuration for both CloudQuery and ClickHouse
-  customer_role_name  = "cloudquery-clickhouse-integration-role"
+  iam_role_name       = "cloudquery-clickhouse-integration-role"
   cloudquery_role_arn = local.cloudquery_role_arn
   clickhouse_role_arn = local.clickhouse_role_arn
   require_external_id = true

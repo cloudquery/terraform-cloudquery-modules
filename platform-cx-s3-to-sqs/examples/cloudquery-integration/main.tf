@@ -39,7 +39,7 @@ module "cloudquery_integration" {
   filter_prefix = "uploads/" # Only monitor this prefix, remove if not needed
 
   # Create IAM role with appropriate trust policy for CloudQuery Platform
-  customer_role_name  = "cloudquery-platform-s3-sqs-access"
+  iam_role_name       = "cloudquery-platform-s3-sqs-access"
   cloudquery_role_arn = local.cloudquery_role_arn
   require_external_id = true
   external_id         = "cloudquery-${random_id.external_id.hex}" # Secure random external ID
