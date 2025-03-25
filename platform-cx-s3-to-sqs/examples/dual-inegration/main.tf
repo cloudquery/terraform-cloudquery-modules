@@ -24,7 +24,7 @@ locals {
 }
 
 module "dual_integration" {
-  source = "../../platform-cx-s3-to-sqs"
+  source = "../../"
 
   # Existing S3 bucket details
   s3_bucket_id  = local.existing_bucket_name
