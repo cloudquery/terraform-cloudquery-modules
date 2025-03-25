@@ -22,6 +22,9 @@ locals {
 module "dual_integration" {
   source = "../../"
 
+  # Region where the resources will be created
+  region = "us-west-2"
+
   # Existing S3 bucket details
   s3_bucket_id  = local.existing_bucket_name
   s3_bucket_arn = local.existing_bucket_arn
