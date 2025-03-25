@@ -1,10 +1,6 @@
 # Example for dual integration (CloudQuery Platform and ClickHouse)
 # This creates an IAM role that both services can assume to access your S3 and SQS resources
 
-provider "aws" {
-  region = "us-west-2" # Change to your preferred region
-}
-
 # Generate a secure random external ID
 resource "random_id" "external_id" {
   byte_length = 8
@@ -36,11 +32,11 @@ module "dual_integration" {
   filter_prefix = "data/" # Optional: Filter events by prefix
 
   # Role configuration for both CloudQuery and ClickHouse
-  iam_role_name       = "cloudquery-clickhouse-integration-role"
-  cloudquery_role_arn = local.cloudquery_role_arn
-  clickhouse_role_arn = local.clickhouse_role_arn
-  require_external_id = true
-  external_id         = local.external_id
+  iam_role_name                = "cloudquery-clickhouse-integration-role"
+  cloudquery_platform_role_arn = local.cloudquery_role_arn
+  clickhouse_role_arn          = local.clickhouse_role_arn
+  require_external_id          = true
+  external_id                  = local.external_id
 
   tags = {
     Environment = "production"

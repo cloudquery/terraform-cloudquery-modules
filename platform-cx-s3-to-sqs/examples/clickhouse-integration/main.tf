@@ -1,10 +1,6 @@
 # Example for ClickHouse integration with existing S3 bucket
 # This creates an IAM role that allows ClickHouse to access your S3 data
 
-provider "aws" {
-  region = "us-east-1" # Change to the region where your S3 bucket is located
-}
-
 locals {
   # ClickHouse IAM role ARN - THIS SHOULD BE THE ACTUAL ROLE ARN PROVIDED BY CLICKHOUSE
   clickhouse_role_arn = "arn:aws:iam::191110999071:role/CH-S3-steel-mv-95-ue1-42-Role"

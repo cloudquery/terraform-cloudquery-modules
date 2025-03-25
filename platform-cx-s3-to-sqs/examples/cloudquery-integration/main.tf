@@ -4,10 +4,6 @@
 # 2. S3 event notifications to the SQS queue
 # 3. An IAM role that CloudQuery Platform can assume to access both resources
 
-provider "aws" {
-  region = "us-east-1" # Change to the region where your S3 bucket is located
-}
-
 # Generate a secure random external ID
 resource "random_id" "external_id" {
   byte_length = 8
@@ -39,10 +35,10 @@ module "cloudquery_integration" {
   filter_prefix = "uploads/" # Only monitor this prefix, remove if not needed
 
   # Create IAM role with appropriate trust policy for CloudQuery Platform
-  iam_role_name       = "cloudquery-platform-s3-sqs-access"
-  cloudquery_role_arn = local.cloudquery_role_arn
-  require_external_id = true
-  external_id         = "cloudquery-${random_id.external_id.hex}" # Secure random external ID
+  iam_role_name                = "cloudquery-platform-s3-sqs-access"
+  cloudquery_platform_role_arn = local.cloudquery_role_arn
+  require_external_id          = true
+  external_id                  = "cloudquery-${random_id.external_id.hex}" # Secure random external ID
 }
 
 # Output the information needed to provide to CloudQuery Platform

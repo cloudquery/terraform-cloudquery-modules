@@ -165,6 +165,11 @@ variable "iam_policy_name" {
 # General
 #--------------------------------------------------------------
 
+variable "region" {
+  type        = string
+  description = "The AWS region to deploy to"
+}
+
 variable "tags" {
   description = "A map of tags to assign to resources"
   type        = map(string)
