@@ -47,7 +47,7 @@ module "cloudquery_integration" {
 # Output the information needed to provide to CloudQuery Platform
 output "role_arn" {
   description = "The ARN of the IAM role to provide to CloudQuery Platform"
-  value       = module.cloudquery_integration.iam_role_arn
+  value       = module.cloudquery_integration.customer_role_arn
 }
 
 output "role_external_id" {

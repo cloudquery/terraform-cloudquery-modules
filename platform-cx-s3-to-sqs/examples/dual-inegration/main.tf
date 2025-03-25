@@ -50,7 +50,7 @@ module "dual_integration" {
 # Output the configuration information
 output "role_arn" {
   description = "The ARN of the IAM role that CloudQuery and ClickHouse can assume"
-  value       = module.dual_integration.iam_role_arn
+  value       = module.dual_integration.customer_role_arn
 }
 
 output "external_id" {

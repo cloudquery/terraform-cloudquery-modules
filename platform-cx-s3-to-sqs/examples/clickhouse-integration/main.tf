@@ -32,7 +32,7 @@ module "clickhouse_integration" {
 # Output the information needed to provide to ClickHouse
 output "role_arn" {
   description = "The ARN of the IAM role to provide to ClickHouse"
-  value       = module.clickhouse_integration.iam_role_arn
+  value       = module.clickhouse_integration.customer_role_arn
 }
 
 output "bucket_name" {
