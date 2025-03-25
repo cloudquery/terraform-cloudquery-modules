@@ -1,13 +1,16 @@
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
-No requirements.
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.0.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.0.0 |
 
 ## Modules
 
@@ -29,9 +32,6 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_role_name"></a> [role\_name](#input\_role\_name) | Name of the IAM role | `string` | n/a | yes |
-| <a name="input_s3_bucket_arn"></a> [s3\_bucket\_arn](#input\_s3\_bucket\_arn) | The ARN of the S3 bucket | `string` | n/a | yes |
-| <a name="input_sqs_queue_arn"></a> [sqs\_queue\_arn](#input\_sqs\_queue\_arn) | The ARN of the SQS queue | `string` | n/a | yes |
 | <a name="input_additional_policy_arns"></a> [additional\_policy\_arns](#input\_additional\_policy\_arns) | List of additional policy ARNs to attach to the role | `list(string)` | `[]` | no |
 | <a name="input_create_instance_profile"></a> [create\_instance\_profile](#input\_create\_instance\_profile) | Whether to create an instance profile for the role | `bool` | `false` | no |
 | <a name="input_create_policy"></a> [create\_policy](#input\_create\_policy) | Whether to create the IAM policy | `bool` | `true` | no |
@@ -48,8 +48,11 @@ No modules.
 | <a name="input_policy_name"></a> [policy\_name](#input\_policy\_name) | Name of the IAM policy to create. If not provided, will use role\_name-policy | `string` | `null` | no |
 | <a name="input_require_external_id"></a> [require\_external\_id](#input\_require\_external\_id) | Whether to require an external ID when other accounts assume this role | `bool` | `false` | no |
 | <a name="input_role_description"></a> [role\_description](#input\_role\_description) | Description of the IAM role | `string` | `"Role for accessing S3 bucket and SQS queues"` | no |
+| <a name="input_role_name"></a> [role\_name](#input\_role\_name) | Name of the IAM role | `string` | n/a | yes |
+| <a name="input_s3_bucket_arn"></a> [s3\_bucket\_arn](#input\_s3\_bucket\_arn) | The ARN of the S3 bucket | `string` | n/a | yes |
 | <a name="input_service_accounts"></a> [service\_accounts](#input\_service\_accounts) | List of Kubernetes service account objects that are allowed to assume this role via IRSA | <pre>list(object({<br/>    namespace = string<br/>    name      = string<br/>  }))</pre> | `[]` | no |
 | <a name="input_sqs_dlq_arn"></a> [sqs\_dlq\_arn](#input\_sqs\_dlq\_arn) | The ARN of the SQS dead-letter queue, if any | `string` | `null` | no |
+| <a name="input_sqs_queue_arn"></a> [sqs\_queue\_arn](#input\_sqs\_queue\_arn) | The ARN of the SQS queue | `string` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to assign to resources | `map(string)` | `{}` | no |
 | <a name="input_trusted_account_ids"></a> [trusted\_account\_ids](#input\_trusted\_account\_ids) | List of AWS account IDs that are allowed to assume this role | `list(string)` | `[]` | no |
 | <a name="input_trusted_role_arns"></a> [trusted\_role\_arns](#input\_trusted\_role\_arns) | List of ARNs of IAM roles that are allowed to assume this role | `list(string)` | `[]` | no |
