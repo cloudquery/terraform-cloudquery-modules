@@ -22,7 +22,7 @@ module "vpc" {
 module "clickhouse_cluster" {
   for_each = local.cluster_nodes
   source   = "terraform-aws-modules/ec2-instance/aws"
-  version  = "5.7.1"
+  version  = "5.8.0"
 
   name                 = each.key
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
@@ -64,7 +64,7 @@ module "clickhouse_cluster" {
 module "clickhouse_keeper" {
   for_each = local.keeper_nodes
   source   = "terraform-aws-modules/ec2-instance/aws"
-  version  = "5.7.1"
+  version  = "5.8.0"
 
   name                 = each.key
   iam_instance_profile = aws_iam_instance_profile.clickhouse_cluster_profile.name
