@@ -50,13 +50,20 @@ jobs:
         working-directory: ${{ matrix.module }}
 
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3
+        with:
+          app-id: ${{ secrets.CQ_APP_ID }}
+          private-key: ${{ secrets.CQ_APP_PRIVATE_KEY }}
+          permission-pull-requests: write
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
-          token: ${{ secrets.GH_CQ_BOT }}
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Configure Git for Pull Request
         if: github.event_name == 'pull_request'
@@ -140,7 +147,7 @@ jobs:
           echo "KICS_RESULTS_DIR=$results_dir" >> $GITHUB_ENV
 
       - name: Run KICS scan
-        uses: checkmarx/kics-github-action@v1.7.0
+        uses: checkmarx/kics-github-action@05aa5eb70eede1355220f4ca5238d96b397e30a6 # v2.1.20
         with:
           path: ${{ matrix.module }}
           config_path: .kics.config
