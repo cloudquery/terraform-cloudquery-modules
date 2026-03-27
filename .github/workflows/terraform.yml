@@ -24,7 +24,7 @@ jobs:
       modules: ${{ steps.set-modules.outputs.modules }}
       examples: ${{ steps.set-examples.outputs.examples }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - id: set-modules
         run: |
@@ -58,7 +58,7 @@ jobs:
           private-key: ${{ secrets.CQ_APP_PRIVATE_KEY }}
           permission-pull-requests: write
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -72,13 +72,13 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
 
       - name: Terraform Format
         id: fmt
         run: terraform fmt -check -recursive
 
-      - uses: terraform-linters/setup-tflint@v4
+      - uses: terraform-linters/setup-tflint@90f302c255ef959cbfb4bd10581afecdb7ece3e6 # v4
         name: Setup TFLint
         with:
           tflint_version: v0.52.0
@@ -125,7 +125,7 @@ jobs:
           fi
 
       - name: Generate Terraform Docs
-        uses: terraform-docs/terraform-docs-action@v1
+        uses: terraform-docs/terraform-docs-action@6de6da0cefcc6b4b7a5cbea4d79d97060733093c # v1
         with:
           working-dir: ${{ matrix.module }}
           output-file: README.md
@@ -159,13 +159,13 @@ jobs:
 
       - name: Upload KICS results
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@ebcb5b36ded6beda4ceefea6a8bc4cc885255bb3 # v3
         with:
           sarif_file: ${{ env.KICS_RESULTS_DIR }}/results.sarif
           category: ${{ matrix.module }}
 
       - name: Comment on PR
-        uses: actions/github-script@v6
+        uses: actions/github-script@d7906e4ad0b1822421a7e6a35d5ca353c962f410 # v6
         if: github.event_name == 'pull_request' && (steps.fmt.outcome == 'failure' || steps.validate.outcome == 'failure')
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -195,16 +195,16 @@ jobs:
 
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           role-to-assume: "arn:aws:iam::615713231484:role/cq-playground-aws-github-action"
           aws-region: us-east-1
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
 
       - name: Terraform Format
         run: terraform fmt -check -recursive
