@@ -1,0 +1,12 @@
+version = 1
+
+[approve]
+auto_approve_usernames = ["cloudquery-ci"]
+
+[merge.message]
+body = "pull_request_body"
+title = "pull_request_title"
+
+[merge]
+blocking_labels = ["wip", "no automerge"]
+notify_on_conflict = false
